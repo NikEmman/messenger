@@ -1,19 +1,11 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 export default function Navbar() {
   return (
-    <>
-      <ul>
-        <li>
-          <a href="/profile">Profile</a>
-        </li>
-        <li>
-          <a href="/logout">Logout</a>
-        </li>
-        <li>
-          <a href="/login">Login</a>
-        </li>
-      </ul>
-    </>
+    <nav>
+      <Link to="/">Home</Link>
+      <Link to="/profile">Profile</Link>
+      <Link to="/login">Login</Link>
+    </nav>
   );
 }

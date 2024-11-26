@@ -1,5 +1,5 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
 export default function Login() {
   return (
     <>
@@ -11,7 +11,7 @@ export default function Login() {
         <input type="password" name="password" id="password" />
         <button type="submit">Sign In</button>
       </form>
-      <a href="/signup">Create new account</a>
+      <Link to="/signup">Create new account</Link>
     </>
   );
 }
