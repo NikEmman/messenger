@@ -38,20 +38,26 @@ export default function Login() {
     <>
       <h1>Sign in</h1>
       <form action="/" method="post">
-        <label htmlFor="email">Email: </label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          onChange={handleEmailChange}
-        />
-        <label htmlFor="password">Password: </label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          onChange={handlePasswordChange}
-        />
+        <label htmlFor="email">
+          <input
+            type="email"
+            name="email"
+            id="email"
+            onChange={handleEmailChange}
+            placeholder="Email"
+          />
+        </label>
+
+        <label htmlFor="password">
+          <input
+            type="password"
+            name="password"
+            id="password"
+            onChange={handlePasswordChange}
+            placeholder="Password"
+          />
+        </label>
+
         <button type="submit" onSubmit={handleSubmit}>
           Sign In
         </button>

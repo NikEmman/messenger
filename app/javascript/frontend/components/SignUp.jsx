@@ -42,27 +42,36 @@ export default function SignUp() {
   return (
     <>
       <form action="/" method="post">
-        <label htmlFor="email">Email: </label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          onChange={handleEmailChange}
-        />
-        <label htmlFor="password">Password: </label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          onChange={handlePasswordChange}
-        />
-        <label htmlFor="password2">Confirm password: </label>
-        <input
-          type="password"
-          name="password2"
-          id="password2"
-          onChange={handlePassword2Change}
-        />
+        <label htmlFor="email">
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Email"
+            onChange={handleEmailChange}
+          />
+        </label>
+
+        <label htmlFor="password">
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Password"
+            onChange={handlePasswordChange}
+          />
+        </label>
+
+        <label htmlFor="password2">
+          <input
+            type="password"
+            name="password_confirm"
+            id="password2"
+            placeholder="Confirm Password"
+            onChange={handlePassword2Change}
+          />
+        </label>
+
         <button type="submit" onSubmit={handleSubmit}>
           Sign Up
         </button>

@@ -1,10 +1,60 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
+.errorPage {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 5em;
+}
+
+.errorPage img {
+  width: 8vw;
+  animation: orbit infinite ease-in-out 6s;
+  position: absolute;
+  top: 35%;
+  /* animation: searchGlass 3s infinite linear; */
+}
+.container {
+  position: relative;
+}
+.container h1 {
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(5px);
+}
+@keyframes orbit {
+  0% {
+    left: -50%;
+    z-index: 1;
+    scale: 0.7;
+    transform: translate(0%, -50%);
+  }
+  25% {
+    scale: 0.3;
+    transform: translate(-100%, -50%);
+  }
+  50% {
+    left: 120%;
+    z-index: 1;
+  }
+  50.001% {
+    z-index: 3;
+  }
+  75% {
+    scale: 1;
+  }
+  100% {
+    left: -50%;
+    transform: translate(0%, -50%);
+    z-index: 3;
+    scale: 0.72;
+  }
+}
+form {
+  display: flex;
+  flex-direction: column;
+}
+form button {
+  width: 20%;
+  min-width: fit-content;
+}
