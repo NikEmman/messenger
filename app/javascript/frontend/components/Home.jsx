@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import GroupChat from "./GroupChat";
+import GroupChatSide from "./GroupChatSide";
 
 export default function Home() {
   const [conversations, setConversations] = useState([]);
   const [user, setUser] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
 
   useEffect(() => {
     const url = "http://localhost:3000/api/profile:id";
@@ -20,12 +21,24 @@ export default function Home() {
   }, [user]);
 
   const conversationsList = conversations.map((conversation) => (
-    <GroupChat conversation={conversation} />
+    <GroupChatSide
+      key={conversation.id}
+      conversation={conversation}
+      user={user}
+      onClick={handleGroupChatSideClick}
+    />
   ));
-
+  const handleGroupChatSideClick = (id) => {
+    setConversationId(id);
+  };
+  const selectedConversation =
+    conversationId &&
+    conversations.filter((conversation) => conversation.id === conversationId);
   return (
     <>
-      <main></main>
+      <main>
+        {conversationId ? <Conversation /> : <h2>No conversation selected!</h2>}
+      </main>
       <aside className="conversationsList">{conversationsList}</aside>
     </>
   );
