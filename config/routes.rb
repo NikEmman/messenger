@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  resources :sessions, only: [ :create ]
+  resources :registrations, only: [ :create ]
+  delete :logout, to: "sessions#logout"
+  get :logged_in, to: "sessions#logged_in"
+
   root "homepage#index"
   get "up" => "rails/health#show", as: :rails_health_check
 
@@ -6,5 +11,5 @@ Rails.application.routes.draw do
   get "/profile", to: "homepage#index"
   get "/signup", to: "homepage#index"
 
-  get "*path", to: "homepage#index", constraints: ->(req) { req.format.html? && !req.path.start_with?("/images", "/assets") }
+  # get "*path", to: "homepage#index", constraints: ->(req) { req.format.html? && !req.path.start_with?("/images", "/assets") }
 end
