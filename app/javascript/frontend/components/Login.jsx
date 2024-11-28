@@ -1,50 +1,38 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 export default function Login() {
-  const [password, setPassword] = useState(null);
-  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [registrationErrors, setRegistrationErrors] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("form submitted");
+  };
 
   const handleEmailChange = (e) => {
-    let email = e.target.value;
-    setEmail(email);
+    setEmail(e.target.value);
   };
   const handlePasswordChange = (e) => {
-    let pass = e.target.value;
-    setPassword(pass);
+    setPassword(e.target.value);
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const url = "/api/placeholder/new";
-    try {
-      let res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(email, password),
-      });
-      if (res.ok) {
-        // re-direct to home
-        // set authenticated to true
-      } else {
-        console.error("Failed to submit:", res.statusText);
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
+  const handlePasswordConfirmationChange = (e) => {
+    setPasswordConfirmation(e.target.value);
   };
-
   return (
     <>
       <h1>Sign in</h1>
-      <form action="/" method="post">
+      <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input
             type="email"
             name="email"
             id="email"
             onChange={handleEmailChange}
+            value={email}
             placeholder="Email"
+            required
           />
         </label>
 
@@ -54,13 +42,24 @@ export default function Login() {
             name="password"
             id="password"
             onChange={handlePasswordChange}
+            value={password}
             placeholder="Password"
+            required
+          />
+        </label>
+        <label htmlFor="password_confirmation">
+          <input
+            type="password"
+            name="password_confirmation"
+            id="password_confirmation"
+            placeholder="Confirm Password"
+            value={passwordConfirmation}
+            onChange={handlePasswordConfirmationChange}
+            required
           />
         </label>
 
-        <button type="submit" onSubmit={handleSubmit}>
-          Sign In
-        </button>
+        <button type="submit">Sign In</button>
       </form>
       <Link to="/signup">Create new account</Link>
     </>

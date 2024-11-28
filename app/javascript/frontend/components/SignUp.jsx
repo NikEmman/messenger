@@ -1,54 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { AppContext } from "./AppContext";
 
-export default function SignUp() {
-  const [password, setPassword] = useState(null);
-  const [password2, setPassword2] = useState(null);
-  const [email, setEmail] = useState(null);
+export default function SignIn() {
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [registrationErrors, setRegistrationErrors] = useState("");
+  const { handleSuccessfulAuth } = useContext(AppContext);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const data = {
+      user: {
+        email: email,
+        password: password,
+        password_confirmation: passwordConfirmation,
+      },
+    };
+    fetch("http://localhost:3000/registrations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json()) // Return the parsed JSON
+      .then((data) => {
+        if (data.status === "created") handleSuccessfulAuth(data);
+      })
+      .catch((error) => {
+        console.error("Registration error:", error);
+      });
+  };
 
   const handleEmailChange = (e) => {
-    let email = e.target.value;
-    setEmail(email);
+    setEmail(e.target.value);
   };
   const handlePasswordChange = (e) => {
-    let pass = e.target.value;
-    setPassword(pass);
+    setPassword(e.target.value);
   };
-  const handlePassword2Change = (e) => {
-    let pass = e.target.value;
-    setPassword2(pass);
+  const handlePasswordConfirmationChange = (e) => {
+    setPasswordConfirmation(e.target.value);
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const url = "/api/placeholder/new";
-    try {
-      let res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(email, password, password2),
-      });
-      if (res.ok) {
-        // re-direct to new profile page
-        // set authenticated to true?
-      } else {
-        console.error("Failed to submit:", res.statusText);
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
-
   return (
     <>
-      <form action="/" method="post">
+      <h1>Sign up</h1>
+      <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input
             type="email"
             name="email"
             id="email"
-            placeholder="Email"
             onChange={handleEmailChange}
+            value={email}
+            placeholder="Email"
+            required
           />
         </label>
 
@@ -57,24 +63,25 @@ export default function SignUp() {
             type="password"
             name="password"
             id="password"
-            placeholder="Password"
             onChange={handlePasswordChange}
+            value={password}
+            placeholder="Password"
+            required
           />
         </label>
-
-        <label htmlFor="password2">
+        <label htmlFor="password_confirmation">
           <input
             type="password"
-            name="password_confirm"
-            id="password2"
+            name="password_confirmation"
+            id="password_confirmation"
             placeholder="Confirm Password"
-            onChange={handlePassword2Change}
+            value={passwordConfirmation}
+            onChange={handlePasswordConfirmationChange}
+            required
           />
         </label>
 
-        <button type="submit" onSubmit={handleSubmit}>
-          Sign Up
-        </button>
+        <button type="submit">Sign In</button>
       </form>
     </>
   );

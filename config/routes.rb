@@ -11,5 +11,4 @@ Rails.application.routes.draw do
   get "/profile", to: "homepage#index"
   get "/signup", to: "homepage#index"
 
-  # get "*path", to: "homepage#index", constraints: ->(req) { req.format.html? && !req.path.start_with?("/images", "/assets") }
 end
