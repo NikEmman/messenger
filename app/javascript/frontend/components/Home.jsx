@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
+import { AppContext } from "./AppContext";
 
 export default function Home() {
   const [conversations, setConversations] = useState([]);
-  const [user, setUser] = useState(null);
   const [conversationId, setConversationId] = useState(null);
-
-  useEffect(() => {
-    const url = "http://localhost:3000/api/profile:id";
-    fetch(url)
-      .then((response) => response.json())
-      .then((data) => setUser(data));
-  }, []);
+  const { user } = useContext(AppContext);
 
   useEffect(() => {
     fetch("http://localhost:3000/api/conversations/")

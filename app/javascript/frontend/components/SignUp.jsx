@@ -10,6 +10,7 @@ export default function SignIn() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const data = {
       user: {
         email: email,
@@ -24,12 +25,14 @@ export default function SignIn() {
       credentials: "include",
       mode: "cors",
     })
-      .then((response) => response.json()) // Return the parsed JSON
+      .then((response) => response.json())
       .then((data) => {
-        if (data.status === "created") handleSuccessfulAuth(data);
+        if (data.status === "created") {
+          handleSuccessfulAuth(data.user);
+        }
       })
       .catch((error) => {
-        console.error("Registration error:", error);
+        setRegistrationErrors(error);
       });
   };
 
@@ -45,6 +48,7 @@ export default function SignIn() {
   return (
     <>
       <h1>Sign up</h1>
+      {registrationErrors && <p className="error">{registrationErrors}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input

@@ -15,9 +15,9 @@ export default function App() {
   // its a hot mess right now, refactor so home page has login form and if successful
   //re-route to w/e messages and work there
 
-  function handleSuccessfulAuth(data) {
+  function handleSuccessfulAuth(user) {
     setLoggedInStatus("LOGGED_IN");
-    setUser(data.user);
+    setUser(user);
   }
   return (
     <>
@@ -25,6 +25,7 @@ export default function App() {
         value={{
           loggedInStatus: loggedInStatus,
           handleSuccessfulAuth: handleSuccessfulAuth,
+          user: user,
         }}
       >
         <Navbar />
