@@ -1,14 +1,40 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AppContext } from "./AppContext";
 export default function Login() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
-  const [registrationErrors, setRegistrationErrors] = useState("");
+  const { handleSuccessfulAuth, loggedInStatus } = useContext(AppContext);
+  const navigate = useNavigate();
+  const homeRouter = () => navigate("/");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("form submitted");
+
+    const data = {
+      user: {
+        email: email,
+        password: password,
+      },
+    };
+    fetch("http://localhost:3000/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "created") {
+          //not working
+          handleSuccessfulAuth(data.user);
+          homeRouter();
+        }
+      })
+      .catch((error) => {
+        console.log("Login error: ", error);
+      });
   };
 
   const handleEmailChange = (e) => {
@@ -17,10 +43,13 @@ export default function Login() {
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
   };
-  const handlePasswordConfirmationChange = (e) => {
-    setPasswordConfirmation(e.target.value);
-  };
-  return (
+
+  return loggedInStatus === "LOGGED_IN" ? (
+    <>
+      <h1>You are already logged in</h1>
+      <Link to="/">Home</Link>
+    </>
+  ) : (
     <>
       <h1>Sign in</h1>
       <form action="/" method="post" onSubmit={handleSubmit}>
@@ -44,17 +73,6 @@ export default function Login() {
             onChange={handlePasswordChange}
             value={password}
             placeholder="Password"
-            required
-          />
-        </label>
-        <label htmlFor="password_confirmation">
-          <input
-            type="password"
-            name="password_confirmation"
-            id="password_confirmation"
-            placeholder="Confirm Password"
-            value={passwordConfirmation}
-            onChange={handlePasswordConfirmationChange}
             required
           />
         </label>

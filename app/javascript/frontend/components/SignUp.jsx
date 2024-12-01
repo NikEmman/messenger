@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { AppContext } from "./AppContext";
 
-export default function SignIn() {
+export default function SignUp() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
