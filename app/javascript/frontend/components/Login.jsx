@@ -6,7 +6,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const { handleSuccessfulAuth, loggedInStatus } = useContext(AppContext);
   const navigate = useNavigate();
-  const homeRouter = () => navigate("/");
+  const messagesRouter = () => navigate("/messages");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function Login() {
         if (data.status === "created") {
           //not working
           handleSuccessfulAuth(data.user);
-          homeRouter();
+          messagesRouter();
         }
       })
       .catch((error) => {
@@ -47,7 +47,7 @@ export default function Login() {
   return loggedInStatus === "LOGGED_IN" ? (
     <>
       <h1>You are already logged in</h1>
-      <Link to="/">Home</Link>
+      <Link to="/messages">Messages</Link>
     </>
   ) : (
     <>

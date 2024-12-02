@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { AppContext } from "./AppContext";
 
 export default function Profile() {
-  const [user, setUser] = useState(false);
+  const { user, loggedInStatus } = useContext(AppContext);
+
+  if (loggedInStatus === "NOT_LOGGED_IN") {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <>
       <h1>Profile Page</h1>
-      {user && user.profile ? (
-        <p>Welcome {user.profile.name}</p>
+      {user && user.name ? (
+        <p>Welcome {user.name}</p>
       ) : (
         <p>Create a profile first</p>
       )}

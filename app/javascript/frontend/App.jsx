@@ -1,25 +1,33 @@
-import React, { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { AppContext } from "./components/AppContext";
 
 export default function App() {
   const [user, setUser] = useState({});
   const [loggedInStatus, setLoggedInStatus] = useState("NOT_LOGGED_IN");
-  const navigate = useNavigate();
-  const loginRouter = () => navigate("/login");
-  // const homeRouter = navigate("/");
+  useEffect(() => {
+    if (loggedInStatus === "NOT_LOGGED_IN") {
+      fetch("http://localhost:3000/logged_in")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.logged_in) {
+            setUser(data.user);
+            setLoggedInStatus("LOGGED_IN");
+          }
+        });
+    }
+  }, [loggedInStatus]);
 
-  // if (loggedInStatus === "NOT_LOGGED_IN") loginRouter();
+  function handleSuccessfulLogOut() {
+    setLoggedInStatus("NOT_LOGGED_IN");
 
-  // its a hot mess right now, refactor so home page has login form and if successful
-  //re-route to w/e messages and work there
+    setUser({});
+  }
 
   function handleSuccessfulAuth(user) {
     setLoggedInStatus("LOGGED_IN");
-    console.log(
-      `handle succ auth was called, loggedIn status : ${loggedInStatus}`
-    );
+
     setUser(user);
   }
   return (
@@ -28,6 +36,7 @@ export default function App() {
         value={{
           loggedInStatus: loggedInStatus,
           handleSuccessfulAuth: handleSuccessfulAuth,
+          handleSuccessfulLogOut: handleSuccessfulLogOut,
           user: user,
         }}
       >

@@ -1,20 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
 import { AppContext } from "./AppContext";
-import Login from "./Login";
+import { Navigate } from "react-router-dom";
 
-export default function Home() {
+export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const { user, loggedInStatus } = useContext(AppContext);
-
-  // useEffect(() => {
-  //   fetch("http://localhost:3000/api/conversations/")
-  //     .then((response) => response.json())
-  //     .then((data) => setConversations(data))
-  //     .catch((error) => console.error("Error fetching data", error));
-  // }, [user]);
 
   const conversationsList = conversations.map((conversation) => (
     <GroupChatSide
@@ -30,6 +23,10 @@ export default function Home() {
   const selectedConversation =
     conversationId &&
     conversations.filter((conversation) => conversation.id === conversationId);
+
+  if (loggedInStatus === "NOT_LOGGED_IN") {
+    return <Navigate to="/" replace />;
+  }
   return (
     <>
       <main>

@@ -7,8 +7,7 @@ Rails.application.routes.draw do
   root "homepage#index"
   get "up" => "rails/health#show", as: :rails_health_check
 
-  get "/login", to: "homepage#index"
+  get "/messages", to: "homepage#index"
   get "/profile", to: "homepage#index"
   get "/signup", to: "homepage#index"
-
 end
