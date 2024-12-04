@@ -1,46 +1,76 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
+
 export default function Login() {
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [loginError, setLoginError] = useState("");
+
   const { handleSuccessfulAuth, loggedInStatus } = useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
 
+  const validateForm = (data) => {
+    const errors = {};
+
+    if (!data.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    if (!data.password) {
+      errors.password = "Password is required";
+    }
+
+    return errors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const data = {
-      user: {
-        email: email,
-        password: password,
-      },
-    };
-    fetch("http://localhost:3000/sessions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "created") {
-          handleSuccessfulAuth(data.user);
-          messagesRouter();
-        }
+    const newErrors = validateForm(formData);
+    console.log("New Errors:", newErrors);
+    setFormErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      const data = {
+        user: {
+          email: formData.email,
+          password: formData.password,
+        },
+      };
+
+      fetch("http://localhost:3000/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+        mode: "cors",
       })
-      .catch((error) => {
-        console.log("Login error: ", error);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "created") {
+            handleSuccessfulAuth(data.user);
+            messagesRouter();
+          }
+        })
+        .catch((error) => {
+          setLoginError(error.toString());
+        });
+    }
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   return loggedInStatus === "LOGGED_IN" ? (
@@ -51,30 +81,37 @@ export default function Login() {
   ) : (
     <>
       <h1>Sign in</h1>
+      {loginError && <p className="error">{loginError}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input
             type="email"
             name="email"
             id="email"
-            onChange={handleEmailChange}
-            value={email}
+            onChange={handleChange}
+            value={formData.email}
             placeholder="Email"
             required
           />
         </label>
+        {formErrors.email && (
+          <span className="error-message">{formErrors.email}</span>
+        )}
 
         <label htmlFor="password">
           <input
             type="password"
             name="password"
             id="password"
-            onChange={handlePasswordChange}
-            value={password}
+            onChange={handleChange}
+            value={formData.password}
             placeholder="Password"
             required
           />
         </label>
+        {formErrors.password && (
+          <span className="error-message">{formErrors.password}</span>
+        )}
 
         <button type="submit">Sign In</button>
       </form>

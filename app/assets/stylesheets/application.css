@@ -58,6 +58,9 @@ form button {
   width: 20%;
   min-width: fit-content;
 }
-input:invalid {
-  border: 2px solid red;
+.error-message {
+  color: red;
+  font-size: 12px;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }

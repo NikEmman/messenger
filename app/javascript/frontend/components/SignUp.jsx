@@ -3,11 +3,14 @@ import { AppContext } from "./AppContext";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    passwordConfirmation: "",
+  });
+  const [formErrors, setFormErrors] = useState({});
 
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [registrationErrors, setRegistrationErrors] = useState("");
   const { handleSuccessfulAuth } = useContext(AppContext);
   const navigate = useNavigate();
@@ -18,43 +21,66 @@ export default function SignUp() {
 
     const data = {
       user: {
-        email: email,
-        name: name,
-        password: password,
-        password_confirmation: passwordConfirmation,
+        email: formData.email,
+        name: formData.name,
+        password: formData.password,
+        password_confirmation: formData.passwordConfirmation,
       },
     };
-    fetch("http://localhost:3000/registrations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "created") {
-          handleSuccessfulAuth(data.user);
-          messagesRouter();
-        }
+    const newErrors = validateForm(formData);
+    setFormErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      fetch("http://localhost:3000/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+        credentials: "include",
+        mode: "cors",
       })
-      .catch((error) => {
-        setRegistrationErrors(error);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "created") {
+            handleSuccessfulAuth(data.user);
+            messagesRouter();
+          }
+        })
+        .catch((error) => {
+          setRegistrationErrors(error);
+        });
+    } else return;
+  };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+  const validateForm = (data) => {
+    const errors = {};
+
+    if (!data.name.trim()) {
+      errors.name = "Name is required";
+    }
+
+    if (!data.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(data.email)) {
+      errors.email = "Email is invalid";
+    }
+
+    if (!data.password) {
+      errors.password = "Password is required";
+    }
+
+    if (data.passwordConfirmation !== data.password) {
+      errors.passwordConfirmation = "Passwords do not match";
+    }
+
+    return errors;
   };
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
-  const handleNameChange = (e) => {
-    setName(e.target.value);
-  };
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-  };
-  const handlePasswordConfirmationChange = (e) => {
-    setPasswordConfirmation(e.target.value);
-  };
   return (
     <>
       <h1>Sign up</h1>
@@ -65,48 +91,62 @@ export default function SignUp() {
             type="email"
             name="email"
             id="email"
-            onChange={handleEmailChange}
-            value={email}
+            onChange={handleChange}
+            value={formData.email}
             placeholder="Email"
             required
           />
         </label>
+        {formErrors.email && (
+          <span className="error-message">{formErrors.email}</span>
+        )}
         <label htmlFor="name">
           <input
             type="name"
             name="name"
             id="name"
-            onChange={handleNameChange}
-            value={name}
+            onChange={handleChange}
+            value={formData.name}
             placeholder="Name"
             required
           />
         </label>
+        {formErrors.name && (
+          <span className="error-message">{formErrors.name}</span>
+        )}
 
         <label htmlFor="password">
           <input
             type="password"
             name="password"
             id="password"
-            onChange={handlePasswordChange}
-            value={password}
+            onChange={handleChange}
+            value={formData.password}
             placeholder="Password"
             required
           />
         </label>
+        {formErrors.password && (
+          <span className="error-message">{formErrors.password}</span>
+        )}
         <label htmlFor="password_confirmation">
           <input
             type="password"
-            name="password_confirmation"
+            name="passwordConfirmation"
             id="password_confirmation"
             placeholder="Confirm Password"
-            value={passwordConfirmation}
-            onChange={handlePasswordConfirmationChange}
+            value={formData.passwordConfirmation}
+            onChange={handleChange}
             required
           />
         </label>
+        {formErrors.passwordConfirmation && (
+          <span className="error-message">
+            {formErrors.passwordConfirmation}
+          </span>
+        )}
 
-        <button type="submit">Sign In</button>
+        <button type="submit">Sign Up</button>
       </form>
     </>
   );
