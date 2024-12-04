@@ -58,3 +58,6 @@ form button {
   width: 20%;
   min-width: fit-content;
 }
+input:invalid {
+  border: 2px solid red;
+}
