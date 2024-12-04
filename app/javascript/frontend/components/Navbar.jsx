@@ -1,22 +1,28 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
 export default function Navbar() {
   const { loggedInStatus, handleSuccessfulLogOut } = useContext(AppContext);
+  const navigate = useNavigate();
+  const signInRouter = navigate("/");
 
   const handleLogOut = () => {
-    fetch("http://localhost:3000/logout", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.logged_out) {
-          handleSuccessfulLogOut();
-        }
-      });
+    if (loggedInStatus === "LOGGED_IN") {
+      fetch("http://localhost:3000/logout", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        mode: "cors",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.logged_out) {
+            handleSuccessfulLogOut();
+          }
+        });
+    } else {
+      signInRouter();
+    }
   };
   return (
     <nav>

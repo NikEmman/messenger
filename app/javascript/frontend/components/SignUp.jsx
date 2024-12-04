@@ -1,12 +1,17 @@
 import React, { useState, useContext } from "react";
 import { AppContext } from "./AppContext";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [registrationErrors, setRegistrationErrors] = useState("");
   const { handleSuccessfulAuth } = useContext(AppContext);
+  const navigate = useNavigate();
+  const messagesRouter = () => navigate("/messages");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,6 +19,7 @@ export default function SignUp() {
     const data = {
       user: {
         email: email,
+        name: name,
         password: password,
         password_confirmation: passwordConfirmation,
       },
@@ -29,6 +35,7 @@ export default function SignUp() {
       .then((data) => {
         if (data.status === "created") {
           handleSuccessfulAuth(data.user);
+          messagesRouter();
         }
       })
       .catch((error) => {
@@ -38,6 +45,9 @@ export default function SignUp() {
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
+  };
+  const handleNameChange = (e) => {
+    setName(e.target.value);
   };
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
@@ -58,6 +68,17 @@ export default function SignUp() {
             onChange={handleEmailChange}
             value={email}
             placeholder="Email"
+            required
+          />
+        </label>
+        <label htmlFor="name">
+          <input
+            type="name"
+            name="name"
+            id="name"
+            onChange={handleNameChange}
+            value={name}
+            placeholder="Name"
             required
           />
         </label>
