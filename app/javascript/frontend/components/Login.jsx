@@ -32,7 +32,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    setLoginError("");
     const newErrors = validateForm(formData);
     console.log("New Errors:", newErrors);
     setFormErrors(newErrors);
@@ -57,6 +57,8 @@ export default function Login() {
           if (data.status === "created") {
             handleSuccessfulAuth(data.user);
             messagesRouter();
+          } else if (!data.logged_in) {
+            setLoginError("Wrong email or password");
           }
         })
         .catch((error) => {
@@ -71,6 +73,8 @@ export default function Login() {
       ...formData,
       [name]: value,
     });
+    setFormErrors({});
+    setLoginError("");
   };
 
   return loggedInStatus === "LOGGED_IN" ? (
@@ -81,17 +85,16 @@ export default function Login() {
   ) : (
     <>
       <h1>Sign in</h1>
-      {loginError && <p className="error">{loginError}</p>}
+      {loginError && <p className="error-message">{loginError}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input
-            type="email"
+            type="text"
             name="email"
             id="email"
             onChange={handleChange}
             value={formData.email}
             placeholder="Email"
-            required
           />
         </label>
         {formErrors.email && (
@@ -106,7 +109,6 @@ export default function Login() {
             onChange={handleChange}
             value={formData.password}
             placeholder="Password"
-            required
           />
         </label>
         {formErrors.password && (

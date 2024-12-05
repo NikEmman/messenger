@@ -56,6 +56,7 @@ export default function SignUp() {
       ...formData,
       [name]: value,
     });
+    setFormErrors({});
   };
   const validateForm = (data) => {
     const errors = {};
@@ -88,13 +89,12 @@ export default function SignUp() {
       <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
           <input
-            type="email"
+            type="text"
             name="email"
             id="email"
             onChange={handleChange}
             value={formData.email}
             placeholder="Email"
-            required
           />
         </label>
         {formErrors.email && (
@@ -108,7 +108,6 @@ export default function SignUp() {
             onChange={handleChange}
             value={formData.name}
             placeholder="Name"
-            required
           />
         </label>
         {formErrors.name && (
@@ -123,7 +122,6 @@ export default function SignUp() {
             onChange={handleChange}
             value={formData.password}
             placeholder="Password"
-            required
           />
         </label>
         {formErrors.password && (
@@ -137,7 +135,6 @@ export default function SignUp() {
             placeholder="Confirm Password"
             value={formData.passwordConfirmation}
             onChange={handleChange}
-            required
           />
         </label>
         {formErrors.passwordConfirmation && (
