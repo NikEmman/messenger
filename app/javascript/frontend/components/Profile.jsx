@@ -13,11 +13,11 @@ export default function Profile() {
   }
 
   //get the user's profile
-  useEffect(() => {
-    fetch(`http://localhost/profile/:${user.id}`)
-      .then((response) => response.json())
-      .then((data) => setProfile(data));
-  }, [user]);
+  // useEffect(() => {
+  //   fetch(`http://localhost/profile/:${user.id}`)
+  //     .then((response) => response.json())
+  //     .then((data) => setProfile(data));
+  // }, [user]);
 
   const handleUpdateProfile = (data) => {
     //fetch with method update
@@ -31,7 +31,7 @@ export default function Profile() {
   return (
     <>
       <h1>Profile Page</h1>
-      {Object.keys(profile).length === 0 ? (
+      {Object.keys(profile).length !== 0 ? (
         showForm ? (
           <ProfileForm
             profile={profile}

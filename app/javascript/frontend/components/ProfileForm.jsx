@@ -13,29 +13,33 @@ export default function ProfileForm({ profile, onSubmit, submitText }) {
       [name]: value,
     });
   };
-
-  <form action="/">
-    <input
-      type="text"
-      name="address"
-      id="address"
-      value={formData.address}
-      onChange={handleChange}
-    />
-    <input
-      type="text"
-      name="work"
-      id="work"
-      value={formData.work}
-      onChange={handleChange}
-    />
-    <input
-      type="text"
-      name="hobby"
-      id="hobby"
-      value={formData.hobby}
-      onChange={handleChange}
-    />
-    <button onClick={onSubmit}>{submitText}</button>
-  </form>;
+  return (
+    <form action="/">
+      <input
+        type="text"
+        name="address"
+        id="address"
+        value={formData.address}
+        placeholder="Address"
+        onChange={handleChange}
+      />
+      <input
+        type="text"
+        name="work"
+        id="work"
+        value={formData.work}
+        placeholder="Work"
+        onChange={handleChange}
+      />
+      <input
+        type="text"
+        name="hobby"
+        id="hobby"
+        value={formData.hobby}
+        placeholder="Hobby"
+        onChange={handleChange}
+      />
+      <button onClick={onSubmit}>{submitText}</button>
+    </form>
+  );
 }
