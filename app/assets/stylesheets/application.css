@@ -64,3 +64,8 @@ form button {
   margin-top: -10px;
   margin-bottom: 10px;
 }
+.myMessage {
+  background-color: rgb(219, 233, 28);
+  width: fit-content;
+  color: darkorange;
+}

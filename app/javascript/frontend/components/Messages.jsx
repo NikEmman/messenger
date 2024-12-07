@@ -5,32 +5,52 @@ import { AppContext } from "./AppContext";
 import { Navigate } from "react-router-dom";
 
 export default function Messages() {
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState([
+    {
+      messages: [
+        { sender_id: 1, body: "This is a message" },
+        { sender_id: 3, body: "This is another message" },
+      ],
+      members: [
+        { name: "John", id: 2 },
+        { name: "Bill", id: 3 },
+        { name: "Luke", id: 4 },
+      ],
+      id: 1,
+    },
+  ]);
   const [conversationId, setConversationId] = useState(null);
   const { user, loggedInStatus } = useContext(AppContext);
+
+  const handleGroupChatSideClick = (id) => {
+    setConversationId(id);
+  };
 
   const conversationsList = conversations.map((conversation) => (
     <GroupChatSide
       key={conversation.id}
       conversation={conversation}
       user={user}
-      onClick={handleGroupChatSideClick}
+      onClick={() => handleGroupChatSideClick(conversation.id)} // Pass a function reference
     />
   ));
-  const handleGroupChatSideClick = (id) => {
-    setConversationId(id);
-  };
-  const selectedConversation =
-    conversationId &&
-    conversations.filter((conversation) => conversation.id === conversationId);
+
+  const selectedConversation = conversations.find(
+    (conversation) => conversation.id === conversationId
+  );
 
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
   }
+
   return (
     <>
       <main>
-        {conversationId ? <Conversation /> : <h2>No conversation selected!</h2>}
+        {selectedConversation ? (
+          <Conversation conversation={selectedConversation} user={user} />
+        ) : (
+          <h2>No conversation selected!</h2>
+        )}
       </main>
       <aside className="conversationsList">{conversationsList}</aside>
     </>
