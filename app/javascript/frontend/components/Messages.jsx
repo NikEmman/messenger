@@ -49,7 +49,7 @@ export default function Messages() {
         {selectedConversation ? (
           <Conversation conversation={selectedConversation} user={user} />
         ) : (
-          <h2>No conversation selected!</h2>
+          <h2>Select a conversation</h2>
         )}
       </main>
       <aside className="conversationsList">{conversationsList}</aside>

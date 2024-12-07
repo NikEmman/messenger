@@ -38,6 +38,7 @@ export default function Conversation({ conversation, user }) {
     //     }
     //   });
     console.log("Message sent");
+    setMessage("");
   };
 
   return (

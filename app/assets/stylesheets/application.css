@@ -69,3 +69,7 @@ form button {
   width: fit-content;
   color: darkorange;
 }
+.groupChat {
+  cursor: pointer;
+  border: 2px solid blue;
+}
