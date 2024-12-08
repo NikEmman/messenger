@@ -7,15 +7,7 @@ import { Navigate } from "react-router-dom";
 export default function Messages() {
   const [conversations, setConversations] = useState([
     {
-      messages: [
-        { sender_id: 1, body: "This is a message" },
-        { sender_id: 3, body: "This is another message" },
-      ],
-      members: [
-        { name: "John", id: 2 },
-        { name: "Bill", id: 3 },
-        { name: "Luke", id: 4 },
-      ],
+      topic: "This is the topic",
       id: 1,
     },
   ]);
@@ -25,13 +17,19 @@ export default function Messages() {
   const handleGroupChatSideClick = (id) => {
     setConversationId(id);
   };
-
+  useEffect(
+    () =>
+      fetch("http://localhost/conversations/")
+        .then((response) => response.json())
+        .then((data) => setConversation(data)),
+    []
+  );
   const conversationsList = conversations.map((conversation) => (
     <GroupChatSide
       key={conversation.id}
-      conversation={conversation}
+      conversationId={conversation.id}
       user={user}
-      onClick={() => handleGroupChatSideClick(conversation.id)} // Pass a function reference
+      onClick={() => handleGroupChatSideClick(conversation.id)}
     />
   ));
 

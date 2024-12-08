@@ -4,6 +4,10 @@ Rails.application.routes.draw do
   delete :logout, to: "sessions#logout"
   get :logged_in, to: "sessions#logged_in"
 
+  resources :conversations, only: [ :index, :show, :destroy ]
+  resources :conversation_user, only: [ :create ]
+  resources :messages, only: [ :create ]
+
   root "homepage#index"
   get "up" => "rails/health#show", as: :rails_health_check
 

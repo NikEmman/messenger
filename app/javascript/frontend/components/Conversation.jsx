@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function Conversation({ conversation, user }) {
+export default function Conversation({ conversationId, user }) {
   const [message, setMessage] = useState("");
+  const [conversation, setConversation] = useState({});
   const [notification, setNotification] = useState("");
 
   const messages = conversation.messages.map((msg) => {
