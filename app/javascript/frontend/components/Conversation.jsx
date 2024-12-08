@@ -25,7 +25,7 @@ export default function Conversation({ conversationId, user }) {
     //   body: message,
     //   conversation_id: conversation.id,
     // };
-    // fetch("http://localhost/conversations", {
+    // fetch("http://localhost/messages", {
     //   method: "POST",
     //   headers: { "Content-Type": "application/json" },
     //   body: JSON.stringify(data),

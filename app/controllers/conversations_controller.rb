@@ -1,13 +1,21 @@
 class ConversationsController < ApplicationController
+  include CurrentUserConcern
   def index
     if @current_user
-      conversations = @current_user.conversations
+      conversations = @current_user.conversations.map do |conversation|
+        {
+          id: conversation.id,
+          topic: conversation.topic,
+          messages: conversation.messages.map { |message| message.body },
+          members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
+        }
+      end
+    else
+      conversations = []
     end
-    members = conversation.users
-    render json: {
-      conversations: conversations,
-      members: members
 
+    render json: {
+      conversations: conversations
     }
   end
   def show
@@ -16,7 +24,7 @@ class ConversationsController < ApplicationController
     render json: {
       id: conversation.id,
       messages: content,
-      members: conversation.users
+      members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
     }
   end
   def destroy

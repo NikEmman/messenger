@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
 import { AppContext } from "./AppContext";
@@ -17,17 +17,15 @@ export default function Messages() {
   const handleGroupChatSideClick = (id) => {
     setConversationId(id);
   };
-  useEffect(
-    () =>
-      fetch("http://localhost/conversations/")
-        .then((response) => response.json())
-        .then((data) => setConversation(data)),
-    []
-  );
+  useEffect(() => {
+    fetch("http://localhost:3000/conversations/")
+      .then((response) => response.json())
+      .then((data) => setConversations(data));
+  }, []);
   const conversationsList = conversations.map((conversation) => (
     <GroupChatSide
       key={conversation.id}
-      conversationId={conversation.id}
+      conversation={conversation}
       user={user}
       onClick={() => handleGroupChatSideClick(conversation.id)}
     />
