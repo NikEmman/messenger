@@ -1,41 +1,43 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
 import { AppContext } from "./AppContext";
 import { Navigate } from "react-router-dom";
 
 export default function Messages() {
-  const [conversations, setConversations] = useState([
-    {
-      topic: "This is the topic",
-      id: 1,
-    },
-  ]);
+  const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const { user, loggedInStatus } = useContext(AppContext);
 
   const handleGroupChatSideClick = (id) => {
     setConversationId(id);
   };
-  useEffect(
-    () =>
-      fetch("http://localhost/conversations/")
-        .then((response) => response.json())
-        .then((data) => setConversation(data)),
-    []
-  );
-  const conversationsList = conversations.map((conversation) => (
-    <GroupChatSide
-      key={conversation.id}
-      conversationId={conversation.id}
-      user={user}
-      onClick={() => handleGroupChatSideClick(conversation.id)}
-    />
-  ));
 
-  const selectedConversation = conversations.find(
-    (conversation) => conversation.id === conversationId
-  );
+  useEffect(() => {
+    fetch("http://localhost:3000/conversations")
+      .then((response) => response.json())
+      .then((data) => {
+        setConversations(data.conversations);
+      })
+      .catch((error) => {
+        console.error("Error fetching conversations:", error);
+      });
+  }, []);
+
+  const conversationsList =
+    conversations.length > 0 &&
+    conversations.map((conversation) => (
+      <GroupChatSide
+        key={conversation.id}
+        conversation={conversation}
+        user={user}
+        onClick={() => handleGroupChatSideClick(conversation.id)}
+      />
+    ));
+
+  const selectedConversation =
+    conversations.length > 0 &&
+    conversations.find((conversation) => conversation.id === conversationId);
 
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
@@ -50,7 +52,9 @@ export default function Messages() {
           <h2>Select a conversation</h2>
         )}
       </main>
-      <aside className="conversationsList">{conversationsList}</aside>
+      <aside className="conversationsList">
+        {conversationsList || <p>No conversations available</p>}
+      </aside>
     </>
   );
 }

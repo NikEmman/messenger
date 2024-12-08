@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 
-export default function Conversation({ conversationId, user }) {
+export default function Conversation({ conversation, user }) {
   const [message, setMessage] = useState("");
-  const [conversation, setConversation] = useState({});
   const [notification, setNotification] = useState("");
 
   const messages = conversation.messages.map((msg) => {
-    const className = msg.sender_id === user.id ? "myMessage" : "message";
+    const className = msg.user_id === user.id ? "myMessage" : "message";
     return (
       <p key={msg.body} className={className}>
         {msg.body}
