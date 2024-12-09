@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-export default function Conversation({ conversation, user }) {
+export default function Conversation({
+  conversation,
+  user,
+  handleMessageSent,
+}) {
   const [message, setMessage] = useState("");
   const [notification, setNotification] = useState("");
 
@@ -23,24 +27,26 @@ export default function Conversation({ conversation, user }) {
   };
 
   const sendMessage = () => {
-    // data = {
-    //   user_id: user.id,
-    //   body: message,
-    //   conversation_id: conversation.id,
-    // };
-    // fetch("http://localhost/messages", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(data),
-    //   credentials: "include",
-    //   mode: "cors",
-    // })
-    //   .then(response.json())
-    //   .then((data) => {
-    //     if (data.response === "ok") {
-    //       setNotification("Message successfully sent.");
-    //     }
-    //   });
+    const newMessage = {
+      user_id: user.id,
+      body: message,
+      conversation_id: conversation.id,
+    };
+    fetch("http://localhost:3000/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newMessage),
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.response === 201) {
+          setNotification("Message successfully sent.");
+          handleMessageSent(data.message);
+        }
+      })
+      .catch(() => setNotification("Failed to sent message"));
     console.log("Message sent");
     setMessage("");
   };

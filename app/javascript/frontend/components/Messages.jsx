@@ -13,6 +13,19 @@ export default function Messages() {
     setConversationId(id);
   };
 
+  const handleMessageSent = (message) => {
+    const newConversations = conversations.map((conversation) => {
+      if (conversation.id === conversationId) {
+        return {
+          ...conversation,
+          messages: [...conversation.messages, message],
+        };
+      }
+      return conversation;
+    });
+    setConversations(newConversations);
+  };
+
   useEffect(() => {
     fetch("http://localhost:3000/conversations")
       .then((response) => response.json())
@@ -47,7 +60,11 @@ export default function Messages() {
     <>
       <main>
         {selectedConversation ? (
-          <Conversation conversation={selectedConversation} user={user} />
+          <Conversation
+            conversation={selectedConversation}
+            user={user}
+            handleMessageSent={handleMessageSent}
+          />
         ) : (
           <h2>Select a conversation</h2>
         )}
