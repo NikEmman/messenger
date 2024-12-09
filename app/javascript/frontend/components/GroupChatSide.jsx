@@ -1,10 +1,9 @@
 import React from "react";
 
 export default function GroupChatSide({ conversation, user, onClick }) {
-  console.log(conversation);
-  const members = conversation.members
-    .filter((member) => member.id !== user.id)
-    .map((member) => <span key={member.id}>{member.name}</span>);
+  const members = conversation.members.map((member) => (
+    <span key={member.id}>{member.name}</span>
+  ));
 
   return (
     <p className="groupChat" onClick={onClick}>

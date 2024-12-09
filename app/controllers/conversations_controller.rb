@@ -18,6 +18,7 @@ class ConversationsController < ApplicationController
       conversations: conversations
     }
   end
+
   def show
     conversation = Conversation.find(params[:id])
     content = conversation.messages.map { |message| message.body }

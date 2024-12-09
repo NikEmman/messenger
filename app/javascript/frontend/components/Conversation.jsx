@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
-export default function Conversation({ conversationId, user }) {
+export default function Conversation({ conversation, user }) {
   const [message, setMessage] = useState("");
-  const [conversation, setConversation] = useState({});
   const [notification, setNotification] = useState("");
 
   const messages = conversation.messages.map((msg) => {
-    const className = msg.sender_id === user.id ? "myMessage" : "message";
+    const className = msg.user_id === user.id ? "myMessage" : "message";
     return (
-      <p key={msg.body} className={className}>
-        {msg.body}
-      </p>
+      <p
+        key={msg.body}
+        className={className}
+        dangerouslySetInnerHTML={{ __html: msg.body }}
+      ></p>
     );
   });
 
-  const handleChange = (e) => {
+  const handleChange = (content) => {
     setNotification("");
-    setMessage(e.target.value);
+    setMessage(content);
   };
 
   const sendMessage = () => {
     // data = {
-    //   sender_id: user.id,
+    //   user_id: user.id,
     //   body: message,
     //   conversation_id: conversation.id,
     // };
@@ -46,13 +49,7 @@ export default function Conversation({ conversationId, user }) {
     <div className="conversation">
       <p className="notification">{notification}</p>
       {messages}
-      <input
-        type="text"
-        name="message"
-        id="message"
-        onChange={handleChange}
-        value={message}
-      />
+      <ReactQuill value={message} onChange={handleChange} />
       <button onClick={sendMessage}>Send</button>
     </div>
   );
