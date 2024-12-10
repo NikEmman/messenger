@@ -19,6 +19,23 @@ class ConversationsController < ApplicationController
     }
   end
 
+  def create
+    conversation = Conversation.create!(conversation_params)
+    if conversation
+      ConversationUser.create!(user_id: @current_user.id, conversation_id: conversation.id)
+      render json: {
+        status: :created,
+        conversation: {
+            id: conversation.id,
+            topic: conversation.topic, messages: [],
+            members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
+          },
+        message: "Conversation created successfully" }
+    else
+      render json: { status: :unprocessable_entity, errors: conversation.errors.full_messages }
+    end
+  end
+
   def show
     conversation = Conversation.find(params[:id])
     content = conversation.messages.map { |message| message.body }
@@ -32,5 +49,9 @@ class ConversationsController < ApplicationController
     conversation = Conversation.find(params[:id])
     conversation.destroy
     render json: { status: 200 }
+  end
+  private
+  def conversation_params
+    params.require(:conversation).permit(:topic)
   end
 end

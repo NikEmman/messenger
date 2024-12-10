@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   delete :logout, to: "sessions#logout"
   get :logged_in, to: "sessions#logged_in"
 
-  resources :conversations, only: [ :index, :show, :destroy ]
+  resources :conversations, only: [ :index, :show, :destroy, :create ]
   resources :conversation_user, only: [ :create ]
   resources :messages, only: [ :create ]
 

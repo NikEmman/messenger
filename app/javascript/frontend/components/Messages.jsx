@@ -1,12 +1,13 @@
 import React, { useState, useContext, useEffect } from "react";
+import { AppContext } from "./AppContext";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
-import { AppContext } from "./AppContext";
 import { Navigate } from "react-router-dom";
 
 export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
+  const [topic, setTopic] = useState("");
   const { user, loggedInStatus } = useContext(AppContext);
 
   const handleGroupChatSideClick = (id) => {
@@ -24,6 +25,28 @@ export default function Messages() {
       return conversation;
     });
     setConversations(newConversations);
+  };
+
+  const handleNewConversation = () => {
+    const newConversation = {
+      topic: topic,
+    };
+
+    fetch("http://localhost:3000/conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ conversation: newConversation }),
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "created") {
+          setConversations([...conversations, data.conversation]);
+          setTopic("");
+        }
+      })
+      .catch((error) => console.error("Error creating conversation:", error));
   };
 
   useEffect(() => {
@@ -67,6 +90,13 @@ export default function Messages() {
       </main>
       <aside className="conversationsList">
         {conversationsList || <p>No conversations available</p>}
+        <input
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="Conversation Topic"
+        />
+        <button onClick={handleNewConversation}>Start New Conversation</button>
       </aside>
     </>
   );
