@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
@@ -14,7 +14,7 @@ export default function Conversation({
     const className = msg.user_id === user.id ? "myMessage" : "message";
     return (
       <p
-        key={msg.body}
+        key={msg.id}
         className={className}
         dangerouslySetInnerHTML={{ __html: msg.body }}
       ></p>
@@ -32,6 +32,7 @@ export default function Conversation({
       body: message,
       conversation_id: conversation.id,
     };
+
     fetch("http://localhost:3000/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,13 +42,14 @@ export default function Conversation({
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.response === 201) {
+        if (data.status === "created") {
+          // Check for correct status
           setNotification("Message successfully sent.");
           handleMessageSent(data.message);
         }
       })
-      .catch(() => setNotification("Failed to sent message"));
-    console.log("Message sent");
+      .catch(() => setNotification("Failed to send message"));
+
     setMessage("");
   };
 

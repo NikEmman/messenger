@@ -29,12 +29,8 @@ export default function Messages() {
   useEffect(() => {
     fetch("http://localhost:3000/conversations")
       .then((response) => response.json())
-      .then((data) => {
-        setConversations(data.conversations);
-      })
-      .catch((error) => {
-        console.error("Error fetching conversations:", error);
-      });
+      .then((data) => setConversations(data.conversations))
+      .catch((error) => console.error("Error fetching conversations:", error));
   }, []);
 
   const conversationsList =

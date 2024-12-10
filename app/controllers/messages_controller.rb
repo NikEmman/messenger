@@ -8,7 +8,7 @@ class MessagesController < ApplicationController
           id: message.id,
           user_id: message.user_id,
           conversation_id: message.conversation_id,
-          body: message.body,
+          body: message.body.body,
           created_at: message.created_at,
           updated_at: message.updated_at
         }
