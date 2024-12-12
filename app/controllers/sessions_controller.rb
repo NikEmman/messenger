@@ -33,4 +33,9 @@ class SessionsController < ApplicationController
     reset_session
     render json: { status: 200, logged_out: true }
   end
+
+  def other_users
+    users = User.where.not(id: @current_user.id)
+    render json: { status: :ok, users: users }
+  end
 end

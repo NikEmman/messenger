@@ -27,6 +27,16 @@ export default function Messages() {
     setConversations(newConversations);
   };
 
+  const handleMemberAdded = (newUser) => {
+    const newConversations = conversations.map((conversation) => {
+      if (conversation.id === conversationId) {
+        return { ...conversation, members: [...conversation.members, newUser] };
+      }
+      return conversation;
+    });
+    setConversations(newConversations);
+  };
+
   const handleNewConversation = () => {
     const newConversation = {
       topic: topic,
@@ -83,6 +93,7 @@ export default function Messages() {
             conversation={selectedConversation}
             user={user}
             handleMessageSent={handleMessageSent}
+            handleMemberAdded={handleMemberAdded}
           />
         ) : (
           <h2>Select a conversation</h2>

@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get :logged_in, to: "sessions#logged_in"
 
   resources :conversations, only: [ :index, :show, :destroy, :create ]
-  resources :conversation_user, only: [ :create ]
+  resources :conversation_users, only: [ :create ]
   resources :messages, only: [ :create ]
 
   root "homepage#index"
@@ -14,4 +14,5 @@ Rails.application.routes.draw do
   get "/messages", to: "homepage#index"
   get "/profile", to: "homepage#index"
   get "/signup", to: "homepage#index"
+  get "/other_users", to: "sessions#other_users"
 end

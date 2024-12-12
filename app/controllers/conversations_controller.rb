@@ -50,6 +50,7 @@ class ConversationsController < ApplicationController
     conversation.destroy
     render json: { status: 200 }
   end
+
   private
   def conversation_params
     params.require(:conversation).permit(:topic)
