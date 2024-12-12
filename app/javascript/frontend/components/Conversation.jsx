@@ -12,7 +12,7 @@ export default function Conversation({
   const [notification, setNotification] = useState("");
   const [showUserList, setShowUserList] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [selection, setSelection] = useState(0);
+  const [selection, setSelection] = useState(null);
   const [userList, setUserList] = useState([]);
 
   const messages = conversation.messages.map((msg) => {
@@ -72,6 +72,10 @@ export default function Conversation({
   const onSearchChange = (e) => {
     setSearchText(e.target.value);
   };
+  const onCancelClick = () => {
+    setSelection(null);
+    setShowUserList(false);
+  };
 
   const filteredUsers = userList
     .filter((user) => {
@@ -123,9 +127,8 @@ export default function Conversation({
         <option value="">Select a user</option>
         {filteredUsers}
       </select>
-      {selection && selection !== "0" && (
-        <button onClick={handleAddUser}>Add</button>
-      )}
+      {selection && <button onClick={handleAddUser}>Add</button>}
+      <button onCLick={onCancelClick}>Cancel</button>
     </>
   ) : (
     <p>Loading users...</p>
