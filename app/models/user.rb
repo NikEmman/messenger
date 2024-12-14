@@ -7,4 +7,5 @@ class User < ApplicationRecord
   has_many :messages
   has_many :conversation_user
   has_many :conversations, through: :conversation_user
+  has_one :profile, dependent: :destroy
 end
