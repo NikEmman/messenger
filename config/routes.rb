@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  resources :profiles, only: [ :create, :show, :destroy ]
+  resources :profiles, only: [ :create, :show, :destroy, :update ]
   resources :sessions, only: [ :create ]
   resources :registrations, only: [ :create ]
   delete :logout, to: "sessions#logout"

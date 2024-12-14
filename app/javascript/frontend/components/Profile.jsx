@@ -13,14 +13,24 @@ export default function Profile() {
   }
 
   //get the user's profile
-  // useEffect(() => {
-  //   fetch(`http://localhost/profile/:${user.id}`)
-  //     .then((response) => response.json())
-  //     .then((data) => setProfile(data));
-  // }, [user]);
+  useEffect(() => {
+    fetch(`http://localhost/profiles/:${user.id}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "not_found") setProfile({});
+        else setProfile({ data });
+      });
+  }, []);
 
   const handleUpdateProfile = (data) => {
-    //fetch with method update
+    // the fetch maybe should be in profileform component
+    // fetch(`http://localhost:3000/profiles/${profile.id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ profile: newProfile }),
+    //   credentials: "include",
+    //   mode: "cors",
+    // });
     setProfile(data);
     setShowForm(false);
   };

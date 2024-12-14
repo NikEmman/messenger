@@ -36,18 +36,20 @@ class ProfilesController < ApplicationController
       render json: { status: :unprocessable_entity }
     end
   end
+
   def show
-    profile = Profile.find(params[:id])
-    render json: {
-      status: :created,
-      profile: {
-        id: profile.id,
-        birthday: profile.birthday,
-        address: profile.address,
-        user_id: profile.user_id,
-        avatar: profile.avatar
+    profile = User.find(params[:id]).profile
+    if profile
+      render json: {
+          id: profile.id,
+          birthday: profile.birthday,
+          address: profile.address,
+          user_id: profile.user_id,
+          avatar: profile.avatar
       }
-    }
+    else
+      render json: { status: :not_found }
+    end
   end
   private
   def profile_params
