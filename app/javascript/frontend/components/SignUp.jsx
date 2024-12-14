@@ -107,7 +107,7 @@ export default function SignUp() {
             id="name"
             onChange={handleChange}
             value={formData.name}
-            placeholder="Name"
+            placeholder="User name"
           />
         </label>
         {formErrors.name && (
