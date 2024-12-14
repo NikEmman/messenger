@@ -3,13 +3,13 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
 export default function Conversation({
+  handleNotificationChange,
   conversation,
   user,
   handleMessageSent,
   handleMemberAdded,
 }) {
   const [message, setMessage] = useState("");
-  const [notification, setNotification] = useState("");
   const [showUserList, setShowUserList] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selection, setSelection] = useState(null);
@@ -27,12 +27,12 @@ export default function Conversation({
   });
 
   const handleChange = (content) => {
-    setNotification("");
+    handleNotificationChange("");
     setMessage(content);
   };
 
   const onAddUserClick = () => {
-    setNotification("");
+    handleNotificationChange("");
     setShowUserList(true);
     fetch("http://localhost:3000/other_users")
       .then((response) => response.json())
@@ -60,11 +60,11 @@ export default function Conversation({
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "created") {
-          setNotification("Message successfully sent.");
+          handleNotificationChange("Message successfully sent.");
           handleMessageSent(data.message);
         }
       })
-      .catch(() => setNotification("Failed to send message"));
+      .catch(() => handleNotificationChange("Failed to send message"));
 
     setMessage("");
   };
@@ -102,7 +102,7 @@ export default function Conversation({
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "created") {
-          setNotification("Added member");
+          handleNotificationChange("Added member");
           setUserList(userList.filter((user) => user.id !== selection));
           const addedUser = userList.find((user) => user.id == selection);
           handleMemberAdded(addedUser);
@@ -136,7 +136,6 @@ export default function Conversation({
 
   return (
     <div className="conversation">
-      <p className="notification">{notification}</p>
       <div className="conversationHeader">
         <p className="topic">{conversation.topic}</p>
         {showUserList ? (

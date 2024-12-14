@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function GroupChatSide({ conversation, user, onClick }) {
+export default function GroupChatSide({
+  onDeleteClick,
+  conversation,
+  user,
+  onClick,
+}) {
   const members = conversation.members.map((member) => {
     if (member.id !== user.id) {
       return <span key={member.id}>{member.name}</span>;
@@ -11,8 +16,17 @@ export default function GroupChatSide({ conversation, user, onClick }) {
   });
 
   return (
-    <p className="groupChat" onClick={onClick}>
-      {conversation.topic || members}
-    </p>
+    <>
+      <p className="groupChat" onClick={onClick}>
+        {conversation.topic || members}
+      </p>
+      <button
+        key={conversation.id}
+        className="deleteBtn"
+        onClick={onDeleteClick}
+      >
+        Del
+      </button>
+    </>
   );
 }
