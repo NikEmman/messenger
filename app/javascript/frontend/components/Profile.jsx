@@ -14,28 +14,60 @@ export default function Profile() {
 
   //get the user's profile
   useEffect(() => {
-    fetch(`http://localhost/profiles/:${user.id}`)
+    fetch(`http://localhost:3000/profiles/${user.id}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "not_found") setProfile({});
-        else setProfile({ data });
+        else setProfile(data);
       });
   }, []);
 
-  const handleUpdateProfile = (data) => {
-    // the fetch maybe should be in profileform component
-    // fetch(`http://localhost:3000/profiles/${profile.id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ profile: newProfile }),
-    //   credentials: "include",
-    //   mode: "cors",
-    // });
-    setProfile(data);
-    setShowForm(false);
-  };
   const handleCreateProfile = (data) => {
-    setProfile(data);
+    const formData = new FormData();
+
+    formData.append("profile[user_id]", user.id);
+    formData.append("profile[address]", data.address);
+    formData.append("profile[birthday]", data.birthday);
+
+    if (data.avatar) {
+      formData.append("profile[avatar]", data.avatar);
+    }
+
+    fetch("http://localhost:3000/profiles/", {
+      method: "POST",
+      body: formData,
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setProfile(data.profile);
+        setShowForm(false);
+      })
+      .catch((error) => console.error("Unable to create: ", error));
+  };
+  const handleUpdateProfile = (data) => {
+    const formData = new FormData();
+
+    formData.append("profile[address]", data.address);
+    formData.append("profile[birthday]", data.birthday);
+
+    if (data.avatar) {
+      formData.append("profile[avatar]", data.avatar);
+    }
+
+    fetch(`http://localhost:3000/profiles/${profile.id}`, {
+      method: "PUT",
+      body: formData,
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setProfile(data.profile);
+        setShowForm(false);
+      })
+      .catch((error) => console.error("Unable to update: ", error));
   };
 
   return (
@@ -50,10 +82,10 @@ export default function Profile() {
           />
         ) : (
           <>
+            <img src={profile.avatar_url} alt="Avatar" />
             <p>{user.name}'s Profile </p>
-            <p>{profile.hobby}</p>
             <p>{profile.address}</p>
-            <p>{profile.work}</p>
+            <p>{profile.birthday}</p>
             <button onClick={() => setShowForm(true)}>Edit profile</button>
           </>
         )
