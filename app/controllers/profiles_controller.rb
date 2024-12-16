@@ -9,7 +9,7 @@ class ProfilesController < ApplicationController
           user_id: profile.user_id,
           address: profile.address,
           birthday: profile.birthday,
-          avatar_url: avatar_url
+          avatar_url: avatar_url(profile)
         }
       }
     else
@@ -30,7 +30,7 @@ class ProfilesController < ApplicationController
           user_id: profile.user_id,
           address: profile.address,
           birthday: profile.birthday,
-          avatar_url: avatar_url
+          avatar_url: avatar_url(profile)
         }
       }
     else
@@ -49,7 +49,7 @@ class ProfilesController < ApplicationController
           birthday: profile.birthday,
           address: profile.address,
           user_id: profile.user_id,
-          avatar_url: avatar_url
+          avatar_url: avatar_url(profile)
       }
     else
       render json: { status: :not_found }

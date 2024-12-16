@@ -16,22 +16,27 @@ export default function Conversation({
   const [selection, setSelection] = useState(null);
   const [userList, setUserList] = useState([]);
 
-  const messages = conversation.messages.map((msg) => {
-    const className = msg.user_id === user.id ? "myMessage" : "message";
+  const messages =
+    conversation.messages.length > 0 ? (
+      conversation.messages.map((msg) => {
+        const className = msg.user_id === user.id ? "myMessage" : "message";
 
-    const member = conversation.members.find(
-      (member) => member.id === msg.user_id
-    );
+        const member = conversation.members.find(
+          (member) => member.id === msg.user_id
+        );
 
-    return (
-      <div key={msg.id} className={"messageContainer " + className}>
-        <Link to={`/profile/${msg.user_id}`}>
-          <img src={member && member.avatar_url} alt="Avatar" />
-        </Link>
-        <p dangerouslySetInnerHTML={{ __html: msg.body }}></p>
-      </div>
+        return (
+          <div key={msg.id} className={"messageContainer " + className}>
+            <Link key={msg.id} to={`/profile/${msg.user_id}`}>
+              <img src={member && member.avatar_url} alt="Avatar" />
+            </Link>
+            <p dangerouslySetInnerHTML={{ __html: msg.body }}></p>
+          </div>
+        );
+      })
+    ) : (
+      <h2>No messages in this conversation</h2>
     );
-  });
 
   const handleChange = (content) => {
     handleNotificationChange("");
@@ -56,7 +61,7 @@ export default function Conversation({
       body: message,
       conversation_id: conversation.id,
     };
-
+    //not working for body
     fetch("http://localhost:3000/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

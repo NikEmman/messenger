@@ -40,7 +40,7 @@ class ConversationsController < ApplicationController
 
   def show
     conversation = Conversation.find(params[:id])
-    content = conversation.messages.map { |message| message.body }
+    content = conversation.messages.map { |message| message.body.body }
     render json: {
       id: conversation.id,
       messages: content,
