@@ -8,7 +8,11 @@ export default function GroupChatSide({
 }) {
   const members = conversation.members.map((member) => {
     if (member.id !== user.id) {
-      return <span key={member.id}>{member.name}</span>;
+      return (
+        <span key={member.id}>
+          <img width={"30px"} src={member.avatar_url} alt="avatar" />
+        </span>
+      );
     }
     if (!conversation.topic && conversation.members.length === 1) {
       return <span key={member.id}>{member.name}</span>;

@@ -2,8 +2,7 @@ class ProfilesController < ApplicationController
   def create
     profile = Profile.create(profile_params)
     if profile.persisted?
-      avatar_url = profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
-      render json: {
+        render json: {
         status: :created,
         profile: {
           id: profile.id,
@@ -24,8 +23,7 @@ class ProfilesController < ApplicationController
   def update
     profile = Profile.find(params[:id])
     if profile.update(profile_params)
-      avatar_url = profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
-      render json: {
+        render json: {
         status: :updated,
         profile: {
           id: profile.id,
@@ -45,7 +43,6 @@ class ProfilesController < ApplicationController
 
   def show
     profile = User.find(params[:id]).profile
-    avatar_url = profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
     if profile
       render json: {
           id: profile.id,
@@ -64,5 +61,8 @@ class ProfilesController < ApplicationController
   end
   def default_avatar_url
     "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
+  end
+  def avatar_url(profile)
+    profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
   end
 end

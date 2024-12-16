@@ -7,7 +7,9 @@ class ConversationsController < ApplicationController
           id: conversation.id,
           topic: conversation.topic,
           messages: conversation.messages.map { |message| message.body },
-          members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
+          members: conversation.users.map do |user|
+            avatar_url = user.profile.avatar.attached? ? url_for(user.profile.avatar) : default_avatar_url
+            { id: user.id, email: user.email, name: user.name, avatar_url: avatar_url } end
         }
       end
     else
@@ -54,5 +56,8 @@ class ConversationsController < ApplicationController
   private
   def conversation_params
     params.require(:conversation).permit(:topic)
+  end
+  def default_avatar_url
+    "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
   end
 end
