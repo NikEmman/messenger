@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactQuill from "react-quill";
+import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 
 export default function Conversation({
@@ -17,12 +18,18 @@ export default function Conversation({
 
   const messages = conversation.messages.map((msg) => {
     const className = msg.user_id === user.id ? "myMessage" : "message";
+
+    const member = conversation.members.find(
+      (member) => member.id === msg.user_id
+    );
+
     return (
-      <p
-        key={msg.id}
-        className={className}
-        dangerouslySetInnerHTML={{ __html: msg.body }}
-      ></p>
+      <div key={msg.id} className={"messageContainer " + className}>
+        <Link to={`/profile/${msg.user_id}`}>
+          <img src={member && member.avatar_url} alt="Avatar" />
+        </Link>
+        <p dangerouslySetInnerHTML={{ __html: msg.body }}></p>
+      </div>
     );
   });
 
