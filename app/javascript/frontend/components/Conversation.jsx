@@ -140,7 +140,7 @@ export default function Conversation({
         {filteredUsers}
       </select>
       {selection && <button onClick={handleAddUser}>Add</button>}
-      <button onCLick={onCancelClick}>Cancel</button>
+      <button onClick={onCancelClick}>Cancel</button>
     </>
   ) : (
     <p>Loading users...</p>

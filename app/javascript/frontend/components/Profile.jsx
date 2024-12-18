@@ -1,9 +1,10 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import ProfileForm from "./ProfileForm";
 
 export default function Profile() {
+  const { id } = useParams();
   const [profile, setProfile] = useState({});
   const [showForm, setShowForm] = useState(false);
   const { user, loggedInStatus } = useContext(AppContext);
@@ -14,13 +15,13 @@ export default function Profile() {
 
   //get the user's profile
   useEffect(() => {
-    fetch(`http://localhost:3000/profiles/${user.id}`)
+    fetch(`http://localhost:3000/profiles/${id}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "not_found") setProfile({});
         else setProfile(data);
       });
-  }, []);
+  }, [id]);
 
   const handleCreateProfile = (data) => {
     const formData = new FormData();
