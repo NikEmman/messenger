@@ -61,11 +61,11 @@ export default function Conversation({
       body: message,
       conversation_id: conversation.id,
     };
-    //not working for body
+
     fetch("http://localhost:3000/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newMessage),
+      body: JSON.stringify({ message: newMessage }),
       credentials: "include",
       mode: "cors",
     })
