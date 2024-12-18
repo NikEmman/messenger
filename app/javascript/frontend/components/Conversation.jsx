@@ -27,17 +27,10 @@ export default function Conversation({
 
         return (
           <div key={msg.id} className={"messageContainer " + className}>
-            <Link key={msg.id} to={`/profile/${msg.user_id}`}>
-              <img
-                key={msg.id}
-                src={member && member.avatar_url}
-                alt="Avatar"
-              />
+            <Link to={`/profile/${msg.user_id}`}>
+              <img src={member && member.avatar_url} alt="Avatar" />
             </Link>
-            <p
-              key={msg.id}
-              dangerouslySetInnerHTML={{ __html: msg.body.body }}
-            ></p>
+            <p dangerouslySetInnerHTML={{ __html: msg.body.body }}></p>
           </div>
         );
       })
@@ -45,7 +38,7 @@ export default function Conversation({
       <h2>No messages in this conversation</h2>
     );
 
-  const handleChange = (content) => {
+  const handleMessageChange = (content) => {
     handleNotificationChange("");
     setMessage(content);
   };
@@ -133,17 +126,17 @@ export default function Conversation({
 
   const userSelection = userList ? (
     <>
+      <input
+        placeholder="Search users"
+        onChange={onSearchChange}
+        value={searchText}
+      />
       <select
         name="users"
         id="users"
         onChange={(e) => setSelection(e.target.value)}
+        size="5"
       >
-        <input
-          placeholder="Search users"
-          onChange={onSearchChange}
-          value={searchText}
-        />
-        <option value="">Select a user</option>
         {filteredUsers}
       </select>
       {selection && <button onClick={handleAddUser}>Add</button>}
@@ -164,7 +157,7 @@ export default function Conversation({
         )}
       </div>
       <div className="messages">{messages}</div>
-      <ReactQuill value={message} onChange={handleChange} />
+      <ReactQuill value={message} onChange={handleMessageChange} />
       <button onClick={sendMessage}>Send</button>
     </div>
   );
