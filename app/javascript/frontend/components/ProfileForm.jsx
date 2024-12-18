@@ -91,7 +91,6 @@ const handleUpdateProfile = (data) => {
     body: formData,
     credentials: "include",
     mode: "cors",
-    // Do NOT set Content-Type header - let browser set it automatically
   })
     .then((response) => response.json())
     .then((data) => {
