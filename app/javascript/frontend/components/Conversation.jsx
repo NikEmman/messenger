@@ -28,9 +28,16 @@ export default function Conversation({
         return (
           <div key={msg.id} className={"messageContainer " + className}>
             <Link key={msg.id} to={`/profile/${msg.user_id}`}>
-              <img src={member && member.avatar_url} alt="Avatar" />
+              <img
+                key={msg.id}
+                src={member && member.avatar_url}
+                alt="Avatar"
+              />
             </Link>
-            <p dangerouslySetInnerHTML={{ __html: msg.body }}></p>
+            <p
+              key={msg.id}
+              dangerouslySetInnerHTML={{ __html: msg.body.body }}
+            ></p>
           </div>
         );
       })
@@ -126,16 +133,16 @@ export default function Conversation({
 
   const userSelection = userList ? (
     <>
-      <input
-        placeholder="Search users"
-        onChange={onSearchChange}
-        value={searchText}
-      />
       <select
         name="users"
         id="users"
         onChange={(e) => setSelection(e.target.value)}
       >
+        <input
+          placeholder="Search users"
+          onChange={onSearchChange}
+          value={searchText}
+        />
         <option value="">Select a user</option>
         {filteredUsers}
       </select>

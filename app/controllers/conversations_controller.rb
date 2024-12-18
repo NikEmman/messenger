@@ -6,7 +6,7 @@ class ConversationsController < ApplicationController
         {
           id: conversation.id,
           topic: conversation.topic,
-          messages: conversation.messages.map { |message| message.body },
+          messages: conversation.messages.map { |message| { body: message.body, user_id: message.user_id } },
           members: conversation.users.map do |user|
             avatar_url = user.profile.avatar.attached? ? url_for(user.profile.avatar) : default_avatar_url
             { id: user.id, email: user.email, name: user.name, avatar_url: avatar_url } end
