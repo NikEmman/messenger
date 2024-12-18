@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
 export default function Navbar() {
   const { user, loggedInStatus, handleSuccessfulLogOut } =
     useContext(AppContext);
+  let navigate = useNavigate();
 
   const handleLogOut = () => {
     fetch("http://localhost:3000/api/logout", {
@@ -16,6 +17,7 @@ export default function Navbar() {
       .then((data) => {
         if (data.logged_out) {
           handleSuccessfulLogOut();
+          navigate("/");
         }
       });
   };

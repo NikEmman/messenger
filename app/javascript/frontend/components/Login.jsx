@@ -10,9 +10,12 @@ export default function Login() {
   const [formErrors, setFormErrors] = useState({});
   const [loginError, setLoginError] = useState("");
 
-  const { handleSuccessfulAuth, loggedInStatus } = useContext(AppContext);
+  const { handleSuccessfulAuth, loggedInStatus, user } = useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
+
+  //checks if user exists(logged in)
+  Object.keys(user).length > 0 && messagesRouter();
 
   const validateForm = (data) => {
     const errors = {};
