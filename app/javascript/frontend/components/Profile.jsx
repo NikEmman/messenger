@@ -12,7 +12,9 @@ export default function Profile() {
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
   }
-  // const isCurrentUser = user.id === id;
+
+  const isCurrentUser = user.id === parseInt(id);
+
   useEffect(() => {
     fetch(`http://localhost:3000/api/profiles/${id}`)
       .then((response) => response.json())
@@ -46,6 +48,7 @@ export default function Profile() {
       })
       .catch((error) => console.error("Unable to create: ", error));
   };
+
   const handleUpdateProfile = (data) => {
     const formData = new FormData();
 
@@ -70,34 +73,48 @@ export default function Profile() {
       .catch((error) => console.error("Unable to update: ", error));
   };
 
+  if (Object.keys(profile).length === 0) {
+    return (
+      <>
+        <h1>Profile Page</h1>
+        {isCurrentUser ? (
+          <>
+            <h2>Create a profile first</h2>
+            <ProfileForm
+              profile={profile}
+              onSubmit={handleCreateProfile}
+              submitText={"Create"}
+            />
+          </>
+        ) : (
+          <h2>This uses has not yet created a profile</h2>
+        )}
+      </>
+    );
+  }
+
+  if (showForm) {
+    return (
+      <>
+        <h1>Profile Page</h1>
+        <ProfileForm
+          profile={profile}
+          onSubmit={handleUpdateProfile}
+          submitText={"Update"}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <h1>Profile Page</h1>
-      {Object.keys(profile).length !== 0 ? (
-        showForm ? (
-          <ProfileForm
-            profile={profile}
-            onSubmit={handleUpdateProfile}
-            submitText={"Update"}
-          />
-        ) : (
-          <>
-            <img src={profile.avatar_url} alt="Avatar" />
-            <p>{profile.name}'s Profile </p>
-            <p>{profile.address}</p>
-            <p>{profile.birthday}</p>
-            <button onClick={() => setShowForm(true)}>Edit profile</button>
-          </>
-        )
-      ) : (
-        <>
-          <h2>Create a profile first</h2>
-          <ProfileForm
-            profile={profile}
-            onSubmit={handleCreateProfile}
-            submitText={"Create"}
-          />
-        </>
+      <img src={profile.avatar_url} alt="Avatar" />
+      <p>{profile.name}'s Profile</p>
+      <p>{profile.address}</p>
+      <p>{profile.birthday}</p>
+      {isCurrentUser && (
+        <button onClick={() => setShowForm(true)}>Edit profile</button>
       )}
     </>
   );
