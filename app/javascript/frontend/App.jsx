@@ -8,7 +8,7 @@ export default function App() {
   const [loggedInStatus, setLoggedInStatus] = useState("NOT_LOGGED_IN");
   useEffect(() => {
     if (loggedInStatus === "NOT_LOGGED_IN") {
-      fetch("http://localhost:3000/logged_in")
+      fetch("http://localhost:3000/api/logged_in")
         .then((response) => response.json())
         .then((data) => {
           if (data.logged_in) {

@@ -31,7 +31,7 @@ export default function SignUp() {
     setFormErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      fetch("http://localhost:3000/registrations", {
+      fetch("http://localhost:3000/api/registrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

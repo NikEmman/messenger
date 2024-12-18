@@ -86,7 +86,7 @@ const handleUpdateProfile = (data) => {
     formData.append("profile[avatar]", data.avatar);
   }
 
-  fetch(`http://localhost:3000/profiles/${profile.id}`, {
+  fetch(`http://localhost:3000/api/profiles/${profile.id}`, {
     method: "PUT",
     body: formData,
     credentials: "include",

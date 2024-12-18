@@ -52,7 +52,7 @@ export default function Messages() {
       topic: topic,
     };
 
-    fetch("http://localhost:3000/conversations", {
+    fetch("http://localhost:3000/api/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ conversation: newConversation }),
@@ -70,14 +70,14 @@ export default function Messages() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:3000/conversations")
+    fetch("http://localhost:3000/api/conversations")
       .then((response) => response.json())
       .then((data) => setConversations(data.conversations))
       .catch((error) => console.error("Error fetching conversations:", error));
   }, []);
 
   const onDeleteClick = (id) => {
-    fetch(`http://localhost:3000/conversations/${id}`, {
+    fetch(`http://localhost:3000/api/conversations/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

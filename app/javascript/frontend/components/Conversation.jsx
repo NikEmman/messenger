@@ -53,7 +53,7 @@ export default function Conversation({
   const onAddUserClick = () => {
     handleNotificationChange("");
     setShowUserList(true);
-    fetch("http://localhost:3000/other_users")
+    fetch("http://localhost:3000/api/other_users")
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "ok") {
@@ -69,7 +69,7 @@ export default function Conversation({
       conversation_id: conversation.id,
     };
 
-    fetch("http://localhost:3000/messages", {
+    fetch("http://localhost:3000/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: newMessage }),
@@ -111,7 +111,7 @@ export default function Conversation({
 
   const handleAddUser = () => {
     const memberData = { conversation_id: conversation.id, user_id: selection };
-    fetch("http://localhost:3000/conversation_users", {
+    fetch("http://localhost:3000/api/conversation_users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(memberData),

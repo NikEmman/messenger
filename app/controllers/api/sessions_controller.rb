@@ -1,3 +1,4 @@
+module Api
 class SessionsController < ApplicationController
   include CurrentUserConcern
 
@@ -44,4 +45,5 @@ class SessionsController < ApplicationController
   def session_params
     params.require(:user).permit(:email, :password)
   end
+end
 end

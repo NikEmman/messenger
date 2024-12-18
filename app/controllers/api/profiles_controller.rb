@@ -1,3 +1,4 @@
+module Api
 class ProfilesController < ApplicationController
   def create
     profile = Profile.create(profile_params)
@@ -46,6 +47,7 @@ class ProfilesController < ApplicationController
     if profile
       render json: {
           id: profile.id,
+          name: profile.user.name,
           birthday: profile.birthday,
           address: profile.address,
           user_id: profile.user_id,
@@ -65,4 +67,5 @@ class ProfilesController < ApplicationController
   def avatar_url(profile)
     profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
   end
+end
 end

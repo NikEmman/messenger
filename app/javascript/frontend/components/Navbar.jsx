@@ -6,7 +6,7 @@ export default function Navbar() {
     useContext(AppContext);
 
   const handleLogOut = () => {
-    fetch("http://localhost:3000/logout", {
+    fetch("http://localhost:3000/api/logout", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

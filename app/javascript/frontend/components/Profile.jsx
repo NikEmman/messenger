@@ -12,10 +12,9 @@ export default function Profile() {
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
   }
-
-  //get the user's profile
+  // const isCurrentUser = user.id === id;
   useEffect(() => {
-    fetch(`http://localhost:3000/profiles/${id}`)
+    fetch(`http://localhost:3000/api/profiles/${id}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "not_found") setProfile({});
@@ -34,7 +33,7 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch("http://localhost:3000/profiles/", {
+    fetch("http://localhost:3000/api/profiles/", {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -57,7 +56,7 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch(`http://localhost:3000/profiles/${profile.id}`, {
+    fetch(`http://localhost:3000/api/profiles/${profile.id}`, {
       method: "PUT",
       body: formData,
       credentials: "include",
@@ -84,7 +83,7 @@ export default function Profile() {
         ) : (
           <>
             <img src={profile.avatar_url} alt="Avatar" />
-            <p>{user.name}'s Profile </p>
+            <p>{profile.name}'s Profile </p>
             <p>{profile.address}</p>
             <p>{profile.birthday}</p>
             <button onClick={() => setShowForm(true)}>Edit profile</button>

@@ -1,3 +1,4 @@
+module Api
 class RegistrationsController < ApplicationController
   def create
     user = User.create!(user_params)
@@ -17,4 +18,5 @@ class RegistrationsController < ApplicationController
   def user_params
     params.require(:user).permit(:email, :password, :password_confirmation, :name)
   end
+end
 end
