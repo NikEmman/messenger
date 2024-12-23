@@ -10,7 +10,6 @@ export default function SignUp() {
     passwordConfirmation: "",
   });
   const [formErrors, setFormErrors] = useState({});
-
   const [registrationErrors, setRegistrationErrors] = useState("");
   const { handleSuccessfulAuth } = useContext(AppContext);
   const navigate = useNavigate();
@@ -38,7 +37,15 @@ export default function SignUp() {
         credentials: "include",
         mode: "cors",
       })
-        .then((response) => response.json())
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((data) => {
+              console.log(data);
+              throw new Error(data.errors[0]);
+            });
+          }
+          return response.json();
+        })
         .then((data) => {
           if (data.status === "created") {
             handleSuccessfulAuth(data.user);
@@ -46,10 +53,11 @@ export default function SignUp() {
           }
         })
         .catch((error) => {
-          setRegistrationErrors(error);
+          setRegistrationErrors(error.message);
         });
-    } else return;
+    }
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -58,6 +66,7 @@ export default function SignUp() {
     });
     setFormErrors({});
   };
+
   const validateForm = (data) => {
     const errors = {};
 
@@ -84,7 +93,7 @@ export default function SignUp() {
 
   return (
     <>
-      <h1>Sign up</h1>
+      <h1>Sign Up</h1>
       {registrationErrors && <p className="error">{registrationErrors}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
         <label htmlFor="email">
