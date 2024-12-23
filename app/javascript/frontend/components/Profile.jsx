@@ -110,9 +110,15 @@ export default function Profile() {
     <>
       <h1>Profile Page</h1>
       <img src={profile.avatar_url} alt="Avatar" />
-      <p>{user.name || "Anonymous"}'s Profile</p>
-      <p>{profile.address}</p>
-      <p>{profile.birthday}</p>
+      <p>
+        User name: <span>{user.name || "Anonymous"}</span>
+      </p>
+      <p>
+        Address: <span>{profile.address}</span>
+      </p>
+      <p>
+        Birthday: <span>{profile.birthday}</span>
+      </p>
       {isCurrentUser && (
         <button onClick={() => setShowForm(true)}>Edit profile</button>
       )}
