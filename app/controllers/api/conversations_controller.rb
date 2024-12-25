@@ -9,8 +9,7 @@ module Api
               topic: conversation.topic,
               messages: conversation.messages.map { |message| { body: message.body, user_id: message.user_id } },
               members: conversation.users.map do |user|
-                avatar_url = user.profile.avatar.attached? ? url_for(user.profile.avatar) : default_avatar_url
-                { id: user.id, email: user.email, name: user.name, avatar_url: avatar_url } end
+                { id: user.id, email: user.email, name: user.name, avatar_url: avatar_url(user.profile) } end
             }
           end
         else
@@ -60,6 +59,9 @@ module Api
       end
       def default_avatar_url
         "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
+      end
+      def avatar_url(profile)
+        profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
       end
   end
 end

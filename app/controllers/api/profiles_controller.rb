@@ -65,7 +65,7 @@ module Api
       "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
     end
     def avatar_url(profile)
-      profile.avatar.attached? ? url_for(profile.avatar) : default_avatar_url
+      profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
     end
   end
 end
