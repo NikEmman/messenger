@@ -36,7 +36,7 @@ class SessionsController < ApplicationController
     end
 
     def other_users
-      users = User.where.not(id: @current_user.id)
+      users = User.where.not(id: @current_user&.id)
       render json: { status: :ok, users: users }
     end
 
