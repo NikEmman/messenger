@@ -8,7 +8,111 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+* {
+  margin: 0;
+  padding: 0;
+}
+a:link,
+a:visited {
+  text-decoration: none;
+  color: white;
+  padding: none;
+}
 
+/* NavBar Styles */
+nav {
+  height: 8vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(250, 250, 250);
+  padding-left: 2em;
+  padding-right: 2em;
+  text-decoration: none;
+}
+nav button,
+nav a {
+  padding-left: 1em;
+  padding-right: 1em;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  height: 6vh;
+  width: 15vw;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: large;
+}
+nav button:hover,
+nav a:hover {
+  background-color: white;
+  color: blue;
+  cursor: pointer;
+  border: 2px solid blue;
+}
+nav button:active,
+nav a:active {
+  transform: translate(4px, 4px);
+}
+/* Messages page styles */
+.mainContainer {
+  padding: 2em;
+  display: flex;
+  gap: 1em;
+}
+main {
+  flex: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2em;
+}
+aside {
+  flex: 1;
+}
+.notification {
+  height: 5vh;
+  background-color: rgb(72, 72, 72);
+  color: white;
+  font-weight: 700;
+  font-size: larger;
+  text-align: center;
+  border-radius: 5px;
+  width: 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+h2 {
+  font-size: xx-large;
+  text-align: center;
+}
+/* Conversation styles */
+.conversation,
+.messageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* Messages styles */
+.messageContainer {
+  width: 40%;
+}
+.messageContainer img {
+  width: 2em;
+  height: auto;
+}
+.myMessage {
+  background-color: rgb(219, 233, 28);
+  width: fit-content;
+  color: darkorange;
+  align-self: flex-end;
+}
+
+/* Error page styles */
 .errorPage {
   height: 100vh;
   display: flex;
@@ -73,11 +177,6 @@ form button {
   font-size: 12px;
   margin-top: -10px;
   margin-bottom: 10px;
-}
-.myMessage {
-  background-color: rgb(219, 233, 28);
-  width: fit-content;
-  color: darkorange;
 }
 .groupChat {
   cursor: pointer;

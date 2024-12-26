@@ -117,7 +117,7 @@ export default function Messages() {
   return (
     <>
       <main>
-        <p className="notification">{notification}</p>
+        {notification && <p className="notification">{notification}</p>}
         {selectedConversation ? (
           <Conversation
             handleNotificationChange={handleNotificationChange}
