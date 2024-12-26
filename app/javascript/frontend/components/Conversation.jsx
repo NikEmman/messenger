@@ -139,7 +139,11 @@ export default function Conversation({
       >
         {filteredUsers}
       </select>
-      {selection && <button onClick={handleAddUser}>Add</button>}
+      {selection && (
+        <button className="smallBtn" onClick={handleAddUser}>
+          Add
+        </button>
+      )}
       <button onClick={onCancelClick}>Cancel</button>
     </>
   ) : (
@@ -153,7 +157,9 @@ export default function Conversation({
         {showUserList ? (
           userSelection
         ) : (
-          <button onClick={onAddUserClick}>Add user</button>
+          <button className="smallBtn" onClick={onAddUserClick}>
+            Add user
+          </button>
         )}
       </div>
       <div className="messages">{messages}</div>

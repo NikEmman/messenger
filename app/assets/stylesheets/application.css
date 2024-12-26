@@ -18,7 +18,38 @@ a:visited {
   color: white;
   padding: none;
 }
-
+button,
+a {
+  padding-left: 1em;
+  padding-right: 1em;
+  background-color: blue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  min-width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: large;
+  height: 6vh;
+  width: 15vw;
+}
+button:hover,
+a:hover {
+  background-color: white;
+  color: blue;
+  cursor: pointer;
+  border: 2px solid blue;
+}
+button:active,
+a:active {
+  transform: translate(4px, 4px);
+}
+.smallBtn {
+  height: 3vh;
+  width: fit-content;
+  padding: 0.5em;
+}
 /* NavBar Styles */
 nav {
   height: 8vh;
@@ -29,33 +60,6 @@ nav {
   padding-left: 2em;
   padding-right: 2em;
   text-decoration: none;
-}
-nav button,
-nav a {
-  padding-left: 1em;
-  padding-right: 1em;
-  background-color: blue;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  height: 6vh;
-  width: 15vw;
-  min-width: fit-content;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: large;
-}
-nav button:hover,
-nav a:hover {
-  background-color: white;
-  color: blue;
-  cursor: pointer;
-  border: 2px solid blue;
-}
-nav button:active,
-nav a:active {
-  transform: translate(4px, 4px);
 }
 /* Messages page styles */
 .mainContainer {
@@ -91,25 +95,78 @@ h2 {
   text-align: center;
 }
 /* Conversation styles */
+.conversation {
+  width: 70%;
+}
 .conversation,
 .messageContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1em;
+}
+.conversationHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 3em;
+}
+
+.topic {
+  font-weight: 800;
+  font-style: italic;
+  font-size: x-large;
 }
 /* Messages styles */
 .messageContainer {
   width: 40%;
+  display: flex;
+  flex-direction: row;
+
+  gap: 0.5em;
 }
 .messageContainer img {
   width: 2em;
   height: auto;
+  border-radius: 100%;
+}
+.messages {
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  border: 2px solid rgb(134, 133, 133);
+  border-radius: 5px;
+  width: 100%;
+  gap: 1em;
+  overflow-y: auto;
+  min-height: 50vh;
+}
+.messages a {
+  height: fit-content;
+  width: fit-content;
+  border-radius: 50%;
+  padding: 0;
+}
+.messages a:hover {
+  border: none;
+}
+.messages p {
+  padding: 0.5em;
+  border-radius: 5px;
+  width: fit-content;
+  background-color: lightslategray;
+  color: white;
 }
 .myMessage {
-  background-color: rgb(219, 233, 28);
-  width: fit-content;
-  color: darkorange;
   align-self: flex-end;
+  display: flex;
+  flex-direction: row-reverse;
+}
+.myMessage p {
+  background-color: rgb(75, 122, 211);
+}
+.quill {
+  width: 100%;
 }
 
 /* Error page styles */

@@ -115,7 +115,7 @@ export default function Messages() {
   }
 
   return (
-    <>
+    <div className="mainContainer">
       <main>
         {notification && <p className="notification">{notification}</p>}
         {selectedConversation ? (
@@ -143,6 +143,6 @@ export default function Messages() {
         />
         <button onClick={handleNewConversation}>Start New Conversation</button>
       </aside>
-    </>
+    </div>
   );
 }
