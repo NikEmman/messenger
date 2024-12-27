@@ -125,7 +125,7 @@ export default function Conversation({
   };
 
   const userSelection = userList ? (
-    <>
+    <div className="userSelectionForm">
       <input
         placeholder="Search users"
         onChange={onSearchChange}
@@ -145,7 +145,7 @@ export default function Conversation({
         </button>
       )}
       <button onClick={onCancelClick}>Cancel</button>
-    </>
+    </div>
   ) : (
     <p>Loading users...</p>
   );

@@ -20,10 +20,8 @@ export default function GroupChatSide({
   });
 
   return (
-    <>
-      <p className="groupChat" onClick={onClick}>
-        {conversation.topic || members}
-      </p>
+    <div className="groupChat">
+      <p onClick={onClick}>{conversation.topic || members}</p>
       <button
         key={conversation.id}
         className="deleteBtn smallBtn"
@@ -31,6 +29,6 @@ export default function GroupChatSide({
       >
         Del
       </button>
-    </>
+    </div>
   );
 }

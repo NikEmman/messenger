@@ -130,8 +130,10 @@ export default function Messages() {
           <h2>Select a conversation</h2>
         )}
       </main>
-      <aside className="conversationsList">
-        {conversationsList || <p>No conversations available</p>}
+      <aside>
+        <div className="conversationsList">
+          {conversationsList || <p>No conversations available</p>}
+        </div>
         <input
           type="text"
           value={topic}
