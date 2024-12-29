@@ -87,7 +87,7 @@ export default function Profile() {
             />
           </>
         ) : (
-          <h2>This uses has not yet created a profile</h2>
+          <h2>This user has not created a profile yet</h2>
         )}
       </>
     );
@@ -95,14 +95,14 @@ export default function Profile() {
 
   if (showForm) {
     return (
-      <>
+      <div className="formPage">
         <h1>Profile Page</h1>
         <ProfileForm
           profile={profile}
           onSubmit={handleUpdateProfile}
           submitText={"Update"}
         />
-      </>
+      </div>
     );
   }
 

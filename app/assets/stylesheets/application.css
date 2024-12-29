@@ -236,6 +236,37 @@ aside {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+
+/* Profile forms, Login, SignUp */
+.formPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1em;
+  height: 100vh;
+}
+.formPage a,
+.formPage button,
+form input {
+  width: 30vw;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  width: 30vw;
+}
+.formPage a {
+  background-color: inherit;
+  color: rgb(75, 122, 211);
+  text-decoration: underline;
+}
+.formPage a:hover {
+  transform: none;
+  border: none;
+}
+
 /* Error page styles */
 .errorPage {
   height: 100vh;
@@ -288,14 +319,7 @@ aside {
     scale: 0.72;
   }
 }
-form {
-  display: flex;
-  flex-direction: column;
-}
-form button {
-  width: 20%;
-  min-width: fit-content;
-}
+
 .error-message {
   color: red;
   font-size: 12px;

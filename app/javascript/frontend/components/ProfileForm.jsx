@@ -74,28 +74,3 @@ export default function ProfileForm({ profile, onSubmit, submitText }) {
     </form>
   );
 }
-const handleUpdateProfile = (data) => {
-  const formData = new FormData();
-
-  // Append text fields
-  formData.append("profile[address]", data.address);
-  formData.append("profile[birthday]", data.birthday);
-
-  // Append avatar if it exists
-  if (data.avatar) {
-    formData.append("profile[avatar]", data.avatar);
-  }
-
-  fetch(`http://localhost:3000/api/profiles/${profile.id}`, {
-    method: "PUT",
-    body: formData,
-    credentials: "include",
-    mode: "cors",
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      setProfile(data.profile);
-      setShowForm(false);
-    })
-    .catch((error) => console.error("Unable to update: ", error));
-};

@@ -92,7 +92,7 @@ export default function SignUp() {
   };
 
   return (
-    <>
+    <div className="formPage">
       <h1>Sign Up</h1>
       {registrationErrors && <p className="error">{registrationErrors}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
@@ -154,6 +154,6 @@ export default function SignUp() {
 
         <button type="submit">Sign Up</button>
       </form>
-    </>
+    </div>
   );
 }

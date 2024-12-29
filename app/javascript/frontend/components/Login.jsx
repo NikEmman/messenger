@@ -90,7 +90,7 @@ export default function Login() {
       <Link to="/messages">Messages</Link>
     </>
   ) : (
-    <>
+    <div className="formPage">
       <h1>Sign in</h1>
       {loginError && <p className="error-message">{loginError}</p>}
       <form action="/" method="post" onSubmit={handleSubmit}>
@@ -125,6 +125,6 @@ export default function Login() {
         <button type="submit">Sign In</button>
       </form>
       <Link to="/signup">Create new account</Link>
-    </>
+    </div>
   );
 }
