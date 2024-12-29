@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
 
@@ -15,7 +15,11 @@ export default function Login() {
   const messagesRouter = () => navigate("/messages");
 
   //checks if user exists(logged in)
-  Object.keys(user).length > 0 && messagesRouter();
+  useEffect(() => {
+    if (Object.keys(user).length > 0) {
+      navigate("/messages");
+    }
+  }, [user]);
 
   const validateForm = (data) => {
     const errors = {};

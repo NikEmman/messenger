@@ -26,11 +26,14 @@ export default function Conversation({
         );
 
         return (
-          <div key={msg.id} className={"messageContainer " + className}>
+          <div
+            key={msg.id || msg.body}
+            className={"messageContainer " + className}
+          >
             <Link to={`/profile/${msg.user_id}`}>
               <img src={member && member.avatar_url} alt="Avatar" />
             </Link>
-            <p dangerouslySetInnerHTML={{ __html: msg.body.body }}></p>
+            <p dangerouslySetInnerHTML={{ __html: msg.body }}></p>
           </div>
         );
       })

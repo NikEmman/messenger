@@ -7,7 +7,7 @@ module Api
             {
               id: conversation.id,
               topic: conversation.topic,
-              messages: conversation.messages.map { |message| { body: message.body, user_id: message.user_id } },
+              messages: conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } },
               members: conversation.users.map do |user|
                 { id: user.id, email: user.email, name: user.name, avatar_url: avatar_url(user.profile) } end
             }
