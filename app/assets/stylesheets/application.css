@@ -22,7 +22,7 @@ button,
 a {
   padding-left: 1em;
   padding-right: 1em;
-  background-color: blue;
+  background-color: rgb(75, 122, 211);
   color: white;
   border: none;
   border-radius: 5px;
@@ -37,9 +37,9 @@ a {
 button:hover,
 a:hover {
   background-color: white;
-  color: blue;
+  color: rgb(75, 122, 211);
   cursor: pointer;
-  border: 2px solid blue;
+  border: 2px solid rgb(75, 122, 211);
 }
 button:active,
 a:active {
@@ -53,7 +53,9 @@ a:active {
 input {
   height: 5vh;
   border-radius: 5px;
+  text-indent: 10px;
 }
+
 /* NavBar Styles */
 nav {
   height: 8vh;
@@ -101,9 +103,11 @@ h2 {
 /* Conversation styles */
 .conversation {
   width: 100%;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  padding-bottom: 4em;
 }
 .conversation,
 .messageContainer {
@@ -184,7 +188,8 @@ h2 {
   background-color: rgb(75, 122, 211);
 }
 .quill {
-  width: 100%;
+  width: 80%;
+  height: fit-content;
 }
 
 /* Aside */
@@ -192,6 +197,7 @@ aside {
   display: flex;
   flex-direction: column;
   gap: 3em;
+  width: 20%;
 }
 .conversationsList {
   display: flex;
@@ -208,7 +214,7 @@ aside {
 .groupChat p {
   padding: 0.5em;
   cursor: pointer;
-  border: 1px solid gray;
+  border: 1px solid rgb(134, 133, 133);
   border-radius: 5px;
   white-space: nowrap;
   overflow: hidden;
@@ -216,6 +222,19 @@ aside {
 }
 .groupChat button {
   align-self: center;
+}
+.newConv {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.newConv input {
+  width: 100%;
+}
+.newConv button {
+  width: 100%;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
 }
 /* Error page styles */
 .errorPage {
@@ -282,4 +301,15 @@ form button {
   font-size: 12px;
   margin-top: -10px;
   margin-bottom: 10px;
+}
+@media only screen and (max-device-width: 768px) {
+  aside {
+    min-width: 30vw;
+  }
+  .newConv input {
+    min-width: 100%;
+  }
+  .newConv button {
+    min-width: 100%;
+  }
 }

@@ -144,7 +144,9 @@ export default function Conversation({
           Add
         </button>
       )}
-      <button onClick={onCancelClick}>Cancel</button>
+      <button className="smallBtn" onClick={onCancelClick}>
+        Cancel
+      </button>
     </div>
   ) : (
     <p>Loading users...</p>
@@ -163,8 +165,8 @@ export default function Conversation({
         )}
       </div>
       <div className="messages">{messages}</div>
-      <ReactQuill value={message} onChange={handleMessageChange} />
       <button onClick={sendMessage}>Send</button>
+      <ReactQuill value={message} onChange={handleMessageChange} />
     </div>
   );
 }

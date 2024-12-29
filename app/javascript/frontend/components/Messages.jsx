@@ -134,16 +134,20 @@ export default function Messages() {
         <div className="conversationsList">
           {conversationsList || <p>No conversations available</p>}
         </div>
-        <input
-          type="text"
-          value={topic}
-          onChange={(e) => {
-            setTopic(e.target.value);
-            setNotification("");
-          }}
-          placeholder="Conversation Topic"
-        />
-        <button onClick={handleNewConversation}>Start New Conversation</button>
+        <div className="newConv">
+          <input
+            type="text"
+            value={topic}
+            onChange={(e) => {
+              setTopic(e.target.value);
+              setNotification("");
+            }}
+            placeholder="Conversation Topic"
+          />
+          <button onClick={handleNewConversation}>
+            Start New Conversation
+          </button>
+        </div>
       </aside>
     </div>
   );
