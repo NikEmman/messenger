@@ -274,6 +274,26 @@ form {
   border: none;
 }
 
+/* Profile page */
+.profileContainer {
+  display: flex;
+  gap: 1em;
+}
+.profileContainer img {
+  height: 35vh;
+  width: auto;
+}
+.profileItems {
+  align-self: center;
+  justify-self: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.profileItems button {
+  width: 40%;
+}
+
 /* Error page styles */
 .errorPage {
   height: 100vh;

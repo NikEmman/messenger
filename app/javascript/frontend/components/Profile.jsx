@@ -107,21 +107,25 @@ export default function Profile() {
   }
 
   return (
-    <>
+    <div className="formPage">
       <h1>Profile Page</h1>
-      <img src={profile.avatar_url} alt="Avatar" />
-      <p>
-        User name: <span>{user.name || "Anonymous"}</span>
-      </p>
-      <p>
-        Address: <span>{profile.address}</span>
-      </p>
-      <p>
-        Birthday: <span>{profile.birthday}</span>
-      </p>
-      {isCurrentUser && (
-        <button onClick={() => setShowForm(true)}>Edit profile</button>
-      )}
-    </>
+      <div className="profileContainer">
+        <img src={profile.avatar_url} alt="Avatar" />
+        <div className="profileItems">
+          <p>
+            User name: <span>{user.name || "Anonymous"}</span>
+          </p>
+          <p>
+            Address: <span>{profile.address}</span>
+          </p>
+          <p>
+            Birthday: <span>{profile.birthday}</span>
+          </p>
+          {isCurrentUser && (
+            <button onClick={() => setShowForm(true)}>Edit profile</button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
