@@ -45,6 +45,14 @@ export default function Conversation({
     handleNotificationChange("");
     setMessage(content);
   };
+  const participants = conversation.members.map((member, index) => {
+    return (
+      <span key={member.id}>
+        {member.name || member.email}
+        {index < conversation.members.length - 1 && " | "}
+      </span>
+    );
+  });
 
   const onAddUserClick = () => {
     handleNotificationChange("");
@@ -159,6 +167,7 @@ export default function Conversation({
     <div className="conversation">
       <div className="conversationHeader">
         <p className="topic">{conversation.topic}</p>
+        <p className="members">{participants}</p>
         {showUserList ? (
           userSelection
         ) : (
