@@ -12,7 +12,7 @@ module Api
             birthday: profile.birthday,
             avatar_url: avatar_url(profile)
           }
-        }
+        }, status: :created
       else
         render json: {
           status: :unprocessable_entity,
