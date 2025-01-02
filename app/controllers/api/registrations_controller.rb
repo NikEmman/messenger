@@ -4,7 +4,7 @@ module Api
       user = User.create(user_params)
       if user.persisted?
         session[:user_id] = user.id
-        render json: { status: :created, user: user }
+        render json: { status: :created, user: user }, status: :created
       else
         render json: { status: :unprocessable_entity, errors: user.errors.full_messages }, status: :unprocessable_entity
       end
