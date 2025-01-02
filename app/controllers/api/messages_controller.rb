@@ -13,7 +13,7 @@ module Api
             created_at: message.created_at,
             updated_at: message.updated_at
           }
-        }
+        }, status: :created
       else
         render json: { status: :unprocessable_entity }
       end
