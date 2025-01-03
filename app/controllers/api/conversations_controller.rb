@@ -39,14 +39,20 @@ module Api
       end
 
       def show
-        conversation = Conversation.find(params[:id])
-        content = conversation.messages.map { |message| message.body.body }
-        render json: {
-          id: conversation.id,
-          messages: content,
-          members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
-        }
+        conversation = Conversation.find_by(id: params[:id])
+
+        if conversation
+          content = conversation.messages.map { |message| message.body.body }
+          render json: {
+            id: conversation.id,
+            messages: content,
+            members: conversation.users.map { |user| { id: user.id, email: user.email, name: user.name } }
+          }
+        else
+          render json: { error: "Conversation not found" }, status: :not_found
+        end
       end
+
       def destroy
         conversation = Conversation.find(params[:id])
         conversation.destroy

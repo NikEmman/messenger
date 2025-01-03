@@ -51,6 +51,10 @@ RSpec.describe Api::ConversationsController, type: :request do
       expect(json_response['id']).to eq(conversation.id)
       expect(json_response['messages']).to include('Plain text message')
     end
+    it 'returns not found for non-existent conversation' do
+      get '/api/conversations/9999'
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe 'DELETE /api/conversations/:id' do
