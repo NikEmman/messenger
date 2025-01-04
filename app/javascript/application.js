@@ -2,6 +2,7 @@
 import "@hotwired/turbo-rails";
 import "./frontend/";
 import "../assets/stylesheets/application.css";
+import "react-testing-library";
 
 import "trix";
 import "@rails/actiontext";
