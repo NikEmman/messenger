@@ -6,12 +6,31 @@ export default function ProfileForm({ profile, onSubmit, submitText }) {
     birthday: profile.birthday || "",
     avatar: null,
   });
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateForm = (data) => {
+    const errors = {};
+
+    if (!data.address.trim()) {
+      errors.address = "Address is required";
+    }
+
+    if (!data.birthday) {
+      errors.birthday = "Birthday is required";
+    }
+
+    return errors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
+    });
+    setFormErrors({
+      ...formErrors,
+      [name]: "",
     });
   };
 
@@ -30,23 +49,44 @@ export default function ProfileForm({ profile, onSubmit, submitText }) {
     });
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = validateForm(formData);
+    setFormErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      onSubmit(formData);
+    }
+  };
+
   return (
-    <form action="/">
-      <input
-        type="text"
-        name="address"
-        id="address"
-        value={formData.address}
-        placeholder="Address"
-        onChange={handleChange}
-      />
-      <input
-        type="date"
-        name="birthday"
-        id="birthday"
-        value={formData.birthday}
-        onChange={handleChange}
-      />
+    <form onSubmit={handleSubmit}>
+      <div>
+        <input
+          type="text"
+          name="address"
+          id="address"
+          value={formData.address}
+          placeholder="Address"
+          onChange={handleChange}
+        />
+        {formErrors.address && (
+          <span className="error-message">{formErrors.address}</span>
+        )}
+      </div>
+      <div>
+        <input
+          type="date"
+          name="birthday"
+          id="birthday"
+          value={formData.birthday}
+          onChange={handleChange}
+          data-testid="birthday-input"
+        />
+        {formErrors.birthday && (
+          <span className="error-message">{formErrors.birthday}</span>
+        )}
+      </div>
       {formData.avatar && (
         <div>
           <img
@@ -54,23 +94,20 @@ export default function ProfileForm({ profile, onSubmit, submitText }) {
             width={"250px"}
             src={URL.createObjectURL(formData.avatar)}
           />
-
           <button type="button" onClick={handleRemoveImage}>
             Remove
           </button>
         </div>
       )}
-      <input type="file" name="avatar" onChange={handleImageChange} />
-      <button
-        type="button"
-        onClick={() =>
-          onSubmit({
-            ...formData,
-          })
-        }
-      >
-        {submitText}
-      </button>
+      <div>
+        <input
+          type="file"
+          name="avatar"
+          data-testid="avatar-input"
+          onChange={handleImageChange}
+        />
+      </div>
+      <button type="submit">{submitText}</button>
     </form>
   );
 }
