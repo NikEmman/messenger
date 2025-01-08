@@ -76,16 +76,15 @@ export default function Profile() {
   if (Object.keys(profile).length === 0) {
     return (
       <>
-        <h1>Profile Page</h1>
         {isCurrentUser ? (
-          <>
-            <h2>Create a profile first</h2>
+          <div className="formPage">
+            <h1>Create a profile first</h1>
             <ProfileForm
               profile={profile}
               onSubmit={handleCreateProfile}
               submitText={"Create"}
             />
-          </>
+          </div>
         ) : (
           <h2>This user has not created a profile yet</h2>
         )}
