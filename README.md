@@ -31,3 +31,10 @@ The app architecture is a monolith Rails app, which provides a single view templ
 ### External resources
 
 - Rich text library [React-Quill](https://quilljs.com/playground/react)
+
+### How to run tests
+
+- Download the [github repo](https://github.com/NikEmman/messenger)
+- Open console, navigate into the project folder, run the commands `bundle` and `yarn` to install dependencies
+- Run the command `rspec` for rails tests, `yarn jest` for the React tests
+- To view the project, boot a local server to run the project with the command `bin/dev`, open a browser and visit [local host](http://localhost:3000/)
