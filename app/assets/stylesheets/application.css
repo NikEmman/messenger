@@ -154,7 +154,7 @@ h2 {
 }
 .messageContainer img {
   width: 2em;
-  height: auto;
+  height: 2em;
   border-radius: 100%;
 }
 .messages {
@@ -180,6 +180,7 @@ h2 {
 }
 .messages p {
   padding: 0.5em;
+  padding-left: 1.2em;
   border-radius: 5px;
   width: fit-content;
   background-color: lightslategray;
@@ -282,6 +283,7 @@ form {
 .profileContainer img {
   height: 35vh;
   width: auto;
+  border-radius: 10%;
 }
 .profileItems {
   align-self: center;
