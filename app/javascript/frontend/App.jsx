@@ -44,7 +44,6 @@ export default function App() {
         }}
       >
         <Navbar />
-        <p>Running in {process.env.NODE_ENV}.</p>
         <Outlet />
       </AppContext.Provider>
     </>
