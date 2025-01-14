@@ -11,7 +11,7 @@ export default function SignUp() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [registrationErrors, setRegistrationErrors] = useState("");
-  const { handleSuccessfulAuth } = useContext(AppContext);
+  const { handleSuccessfulAuth, url } = useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
 
@@ -30,7 +30,7 @@ export default function SignUp() {
     setFormErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      fetch("http://localhost:3000/api/registrations", {
+      fetch(`${url}/api/registrations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

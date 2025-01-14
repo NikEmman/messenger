@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { AppContext } from "./components/AppContext";
+import { config } from "./Constants";
 
 export default function App() {
+  const URL = config.url;
   const [user, setUser] = useState({});
   const [loggedInStatus, setLoggedInStatus] = useState("NOT_LOGGED_IN");
   useEffect(() => {
     if (loggedInStatus === "NOT_LOGGED_IN") {
-      fetch("http://localhost:3000/api/logged_in")
+      fetch(`${URL}/api/logged_in`)
         .then((response) => response.json())
         .then((data) => {
           if (data.logged_in) {
@@ -38,9 +40,11 @@ export default function App() {
           handleSuccessfulAuth: handleSuccessfulAuth,
           handleSuccessfulLogOut: handleSuccessfulLogOut,
           user: user,
+          url: URL,
         }}
       >
         <Navbar />
+        <p>Running in {process.env.NODE_ENV}.</p>
         <Outlet />
       </AppContext.Provider>
     </>

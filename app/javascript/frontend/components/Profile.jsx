@@ -7,7 +7,7 @@ export default function Profile() {
   const { id } = useParams();
   const [profile, setProfile] = useState({});
   const [showForm, setShowForm] = useState(false);
-  const { user, loggedInStatus } = useContext(AppContext);
+  const { user, loggedInStatus, url } = useContext(AppContext);
 
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
@@ -16,7 +16,7 @@ export default function Profile() {
   const isCurrentUser = user.id === parseInt(id);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/profiles/${id}`)
+    fetch(`${url}/api/profiles/${id}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "not_found") setProfile({});
@@ -35,7 +35,7 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch("http://localhost:3000/api/profiles/", {
+    fetch(`${url}/api/profiles/`, {
       method: "POST",
       body: formData,
       credentials: "include",
@@ -59,7 +59,7 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch(`http://localhost:3000/api/profiles/${profile.id}`, {
+    fetch(`${url}/api/profiles/${profile.id}`, {
       method: "PUT",
       body: formData,
       credentials: "include",

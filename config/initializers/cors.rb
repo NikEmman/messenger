@@ -5,7 +5,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   end
   allow do
     # the domain on which the production app will be on
-    origins "https://messenger-peb1.onrender.com"
+    origins "c"
     resource "*", headers: :any, methods: [ :get, :post, :put, :patch, :delete, :options, :head ], credentials: true
   end
 end

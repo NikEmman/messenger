@@ -10,7 +10,8 @@ export default function Login() {
   const [formErrors, setFormErrors] = useState({});
   const [loginError, setLoginError] = useState("");
 
-  const { handleSuccessfulAuth, loggedInStatus, user } = useContext(AppContext);
+  const { handleSuccessfulAuth, loggedInStatus, user, url } =
+    useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
 
@@ -52,7 +53,7 @@ export default function Login() {
         },
       };
 
-      fetch("http://localhost:3000/api/sessions", {
+      fetch(`${url}/api/sessions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

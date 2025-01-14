@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
+import { AppContext } from "./AppContext";
 
 export default function Conversation({
   handleNotificationChange,
@@ -15,6 +16,7 @@ export default function Conversation({
   const [searchText, setSearchText] = useState("");
   const [selection, setSelection] = useState(null);
   const [userList, setUserList] = useState([]);
+  const { url } = useContext(AppContext);
 
   const messages =
     conversation.messages.length > 0 ? (
@@ -57,7 +59,7 @@ export default function Conversation({
   const onAddUserClick = () => {
     handleNotificationChange("");
     setShowUserList(true);
-    fetch("http://localhost:3000/api/other_users")
+    fetch(`${url}/api/other_users`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "ok") {
@@ -73,7 +75,7 @@ export default function Conversation({
       conversation_id: conversation.id,
     };
 
-    fetch("http://localhost:3000/api/messages", {
+    fetch(`${url}/api/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message: newMessage }),
@@ -115,7 +117,7 @@ export default function Conversation({
 
   const handleAddUser = () => {
     const memberData = { conversation_id: conversation.id, user_id: selection };
-    fetch("http://localhost:3000/api/conversation_users", {
+    fetch(`${url}/conversation_users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(memberData),
