@@ -19,7 +19,6 @@ default: &default
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-
 development:
   <<: *default
   database: messenger_development
@@ -81,6 +80,7 @@ test:
 production:
   primary: &primary_production
     <<: *default
+    url: <%= ENV['DATABASE_URL'] %>
     database: messenger_production
     username: messenger
     password: <%= ENV["MESSENGER_DATABASE_PASSWORD"] %>
