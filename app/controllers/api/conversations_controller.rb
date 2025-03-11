@@ -64,7 +64,7 @@ module Api
         params.require(:conversation).permit(:topic)
       end
       def default_avatar_url
-        "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
+        request.base_url + ActionController::Base.helpers.asset_path("default_avatar.jpg")
       end
       def avatar_url(profile)
         profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
