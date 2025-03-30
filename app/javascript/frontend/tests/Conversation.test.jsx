@@ -43,7 +43,9 @@ describe("Conversation Component", () => {
   const defaultContextValue = {
     user: mockUser,
     loggedInStatus: "LOGGED_IN",
+    url: "http://localhost:3000",
   };
+
   const mockHandleNotificationChange = jest.fn();
   const mockHandleMessageSent = jest.fn();
   const mockHandleMemberAdded = jest.fn();
@@ -71,9 +73,11 @@ describe("Conversation Component", () => {
         handleMemberAdded: mockHandleMemberAdded,
       });
 
-      const addUserButton = screen.getByText("Add user");
+      // Ensure the "Add user" button renders
+      const addUserButton = await waitFor(() => screen.getByText("Add user"));
       fireEvent.click(addUserButton);
 
+      // Wait for user list to load
       await waitFor(() => {
         expect(screen.getByPlaceholderText("Search users")).toBeInTheDocument();
       });
@@ -86,10 +90,13 @@ describe("Conversation Component", () => {
           }),
       });
 
+      // Search for a user and select from dropdown
       fireEvent.change(screen.getByPlaceholderText("Search users"), {
         target: { value: "charlie@example.com" },
       });
       fireEvent.change(screen.getByRole("listbox"), { target: { value: "3" } });
+
+      // Click "Add" button to add the user
       fireEvent.click(
         screen.getByText((content, element) => {
           return (
@@ -101,10 +108,12 @@ describe("Conversation Component", () => {
     });
 
     await waitFor(() => {
+      // Assert the API call
       expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/conversation_users",
+        "http://localhost:3000/conversation_users",
         expect.any(Object)
       );
+      // Assert notifications and callback
       expect(mockHandleNotificationChange).toHaveBeenCalledWith("Added member");
       expect(mockHandleMemberAdded).toHaveBeenCalledWith({
         id: "3",

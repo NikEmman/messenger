@@ -15,11 +15,19 @@ jest.mock("react-router-dom", () => ({
 // Mock fetch
 global.fetch = jest.fn();
 
-// Helper function to render Navbar with required providers
-const renderNavbar = (contextValue) => {
+// Helper function to render Navbar with necessary providers
+const renderNavbar = (props = {}) => {
+  const defaultContextValue = {
+    user: { id: "123" },
+    loggedInStatus: "LOGGED_IN",
+    url: "http://localhost:3000", // Added the url property
+    handleSuccessfulLogOut: jest.fn(),
+    ...props.contextValue,
+  };
+
   return render(
     <BrowserRouter>
-      <AppContext.Provider value={contextValue}>
+      <AppContext.Provider value={defaultContextValue}>
         <Navbar />
       </AppContext.Provider>
     </BrowserRouter>
@@ -27,18 +35,12 @@ const renderNavbar = (contextValue) => {
 };
 
 describe("Navbar Component", () => {
-  const defaultContextValue = {
-    user: { id: "123" },
-    loggedInStatus: "LOGGED_IN",
-    handleSuccessfulLogOut: jest.fn(),
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test("renders all navigation links when logged in", () => {
-    renderNavbar(defaultContextValue);
+    renderNavbar();
 
     expect(screen.getByText("Messages")).toBeInTheDocument();
     expect(screen.getByText("Profile")).toBeInTheDocument();
@@ -46,19 +48,19 @@ describe("Navbar Component", () => {
   });
 
   test("renders correct profile link with user ID", () => {
-    renderNavbar(defaultContextValue);
+    renderNavbar();
 
     const profileLink = screen.getByText("Profile");
     expect(profileLink.getAttribute("href")).toBe("/profile/123");
   });
 
   test("does not show logout button when logged out", () => {
-    const loggedOutContext = {
-      ...defaultContextValue,
-      loggedInStatus: "NOT_LOGGED_IN",
-    };
-
-    renderNavbar(loggedOutContext);
+    renderNavbar({
+      contextValue: {
+        loggedInStatus: "NOT_LOGGED_IN",
+        user: {},
+      },
+    });
 
     expect(screen.queryByText("Logout")).not.toBeInTheDocument();
   });
@@ -69,7 +71,12 @@ describe("Navbar Component", () => {
       json: () => Promise.resolve({ logged_out: true }),
     });
 
-    renderNavbar(defaultContextValue);
+    const mockHandleSuccessfulLogOut = jest.fn();
+    renderNavbar({
+      contextValue: {
+        handleSuccessfulLogOut: mockHandleSuccessfulLogOut,
+      },
+    });
 
     const logoutButton = screen.getByText("Logout");
     fireEvent.click(logoutButton);
@@ -84,13 +91,13 @@ describe("Navbar Component", () => {
           mode: "cors",
         }
       );
-      expect(defaultContextValue.handleSuccessfulLogOut).toHaveBeenCalled();
+      expect(mockHandleSuccessfulLogOut).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });
   });
 
   test("navigates to correct routes when clicking links", () => {
-    renderNavbar(defaultContextValue);
+    renderNavbar();
 
     const messagesLink = screen.getByText("Messages");
     const profileLink = screen.getByText("Profile");

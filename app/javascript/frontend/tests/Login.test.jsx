@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  act,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BrowserRouter as Router } from "react-router-dom";
 import "@testing-library/jest-dom";
 import Login from "../components/Login";
@@ -48,8 +42,8 @@ describe("Login Component", () => {
   test("validates email and password fields", () => {
     renderWithRouter(<Login />);
 
-    const emailInput = screen.getByPlaceholderText("Email");
-    const passwordInput = screen.getByPlaceholderText("Password");
+    // const emailInput = screen.getByPlaceholderText("Email");
+    // const passwordInput = screen.getByPlaceholderText("Password");
     const submitButton = screen.getByText("Sign In");
 
     fireEvent.click(submitButton);
