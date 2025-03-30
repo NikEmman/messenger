@@ -112,7 +112,7 @@ export default function Profile() {
         <img src={profile.avatar_url} alt="Avatar" />
         <div className="profileItems">
           <p>
-            User name: <span>{user.name || "Anonymous"}</span>
+            User name: <span>{profile.name || "Anonymous"}</span>
           </p>
           <p>
             Address: <span>{profile.address}</span>
