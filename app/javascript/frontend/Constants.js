@@ -1,5 +1,5 @@
 const production = {
-  url: "https://messenger-peb1.onrender.com",
+  url: "https://messenger-lr1s.onrender.com/",
 };
 const development = {
   url: "http://localhost:3000",
