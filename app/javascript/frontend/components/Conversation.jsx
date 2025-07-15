@@ -117,14 +117,17 @@ export default function Conversation({
 
   const handleAddUser = () => {
     const memberData = { conversation_id: conversation.id, user_id: selection };
-    fetch(`${url}/conversation_users`, {
+    fetch(`${url}/api/conversation_users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(memberData),
       credentials: "include",
       mode: "cors",
     })
-      .then((response) => response.json())
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
       .then((data) => {
         if (data.status === "created") {
           handleNotificationChange("Added member");

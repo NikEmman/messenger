@@ -24,7 +24,7 @@ export default function GroupChatSide({
       <p onClick={onClick}>{conversation.topic || members}</p>
       <button
         key={conversation.id}
-        className="deleteBtn smallBtn"
+        className="deleteBtn"
         onClick={onDeleteClick}
       >
         Del

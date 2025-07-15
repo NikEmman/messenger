@@ -4,8 +4,8 @@ module Api
       conversation_user = ConversationUser.create!(conversation_id: params["conversation_id"], user_id: params["user_id"])
       if conversation_user
         render json: {
-          status: :created
-        }
+          status: "created"
+        }, status: :created
       else
         render json: { status: :unprocessable_entity }
       end
