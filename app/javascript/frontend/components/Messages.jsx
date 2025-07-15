@@ -8,6 +8,7 @@ export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
   const [topic, setTopic] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const { user, loggedInStatus, url } = useContext(AppContext);
   const [notification, setNotification] = useState("");
 
@@ -15,9 +16,11 @@ export default function Messages() {
     setNotification("");
     setConversationId(id);
   };
+
   const handleNotificationChange = (newNotification) => {
     setNotification(newNotification);
   };
+
   const handleMessageSent = (message) => {
     const newConversations = conversations.map((conversation) => {
       if (conversation.id === conversationId) {
@@ -30,6 +33,7 @@ export default function Messages() {
     });
     setConversations(newConversations);
   };
+
   const handleConversationDelete = (id) => {
     const newConversations = conversations.filter(
       (conversation) => conversation.id !== id
@@ -47,26 +51,40 @@ export default function Messages() {
     setConversations(newConversations);
   };
 
-  const handleNewConversation = () => {
-    const newConversation = {
-      topic: topic,
-    };
+  const validateForm = (data) => {
+    const errors = {};
+    if (!data.topic.trim()) {
+      errors.topic = "Conversation topic is required";
+    }
+    return errors;
+  };
 
-    fetch(`${url}/api/conversations`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ conversation: newConversation }),
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "created") {
-          setConversations([...conversations, data.conversation]);
-          setTopic("");
-        }
+  const handleNewConversation = () => {
+    const newErrors = validateForm({ topic });
+    setFormErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      const newConversation = {
+        topic: topic,
+      };
+
+      fetch(`${url}/api/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversation: newConversation }),
+        credentials: "include",
+        mode: "cors",
       })
-      .catch((error) => console.error("Error creating conversation:", error));
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "created") {
+            setConversations([...conversations, data.conversation]);
+            setTopic("");
+            setFormErrors({});
+          }
+        })
+        .catch((error) => console.error("Error creating conversation:", error));
+    }
   };
 
   useEffect(() => {
@@ -141,9 +159,13 @@ export default function Messages() {
             onChange={(e) => {
               setTopic(e.target.value);
               setNotification("");
+              setFormErrors({});
             }}
             placeholder="Conversation Topic"
           />
+          {formErrors.topic && (
+            <span className="error-message">{formErrors.topic}</span>
+          )}
           <button onClick={handleNewConversation}>
             Start New Conversation
           </button>
