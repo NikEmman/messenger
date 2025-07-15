@@ -14,7 +14,8 @@
     "react-testing-library": "^8.0.1"
   },
   "scripts": {
-    "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets"
+    "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --define:process.env.NODE_ENV='\"production\"'",
+    "build:dev": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --watch --define:process.env.NODE_ENV='\"development\"'"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
