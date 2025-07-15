@@ -43,7 +43,7 @@ module Api
     def show
       conversation = Conversation.includes(:users, :messages).find_by(id: params[:id])
       if conversation
-        content = conversation.messages.map { |message| message.body }
+        content = conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } }
         render json: {
           id: conversation.id,
           messages: content,

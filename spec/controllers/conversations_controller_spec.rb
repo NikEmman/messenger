@@ -49,7 +49,7 @@ RSpec.describe Api::ConversationsController, type: :request do
       get "/api/conversations/#{conversation.id}"
 
       expect(json_response['id']).to eq(conversation.id)
-      expect(json_response['messages']).to include('Plain text message')
+      expect(json_response['messages']).to include({ 'body' => 'Plain text message', 'user_id' => user.id })
     end
     it 'returns not found for non-existent conversation' do
       get '/api/conversations/9999'

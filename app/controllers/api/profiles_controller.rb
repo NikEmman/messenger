@@ -35,7 +35,7 @@ module Api
       if profile
         render json: profile_response(profile)
       else
-        render json: { status: :not_found }
+        render json: { status: :not_found }, status: :not_found
       end
     end
 
