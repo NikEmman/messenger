@@ -1,17 +1,11 @@
 module Api
   class ProfilesController < ApplicationController
     def create
-      profile = Profile.create(profile_params)
-      if profile.persisted?
-        render json: {
-          status: :created,
-          profile: profile_response(profile)
-        }, status: :created
+      @profile = Profile.new(profile_params)
+      if @profile.save
+        render json: { profile: @profile }, status: :created
       else
-        render json: {
-          status: :unprocessable_entity,
-          errors: profile.errors.full_messages
-        }, status: :unprocessable_entity
+        render json: { errors: @profile.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
@@ -42,7 +36,7 @@ module Api
     private
 
     def profile_params
-      params.require(:profile).permit(:birthday, :address, :avatar, :user_id)
+      params.require(:profile).permit(:user_id, :address, :birthday, :avatar)
     end
 
     def profile_response(profile)

@@ -127,10 +127,6 @@ aside {
   border-radius: 10px;
 }
 
-.conversationsList::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
 /* Group Chat Side Component */
 .groupChat {
   background: #f8f9fa;
@@ -522,7 +518,7 @@ aside {
 /* Messages Container */
 .messages {
   flex: 1;
-  padding: 1 rem;
+  padding: 1rem;
   border: 1px solid #e9ecef;
   border-radius: 12px;
   background: linear-gradient(135deg, #fafafa, #f8f9fa);
@@ -540,11 +536,6 @@ aside {
 
 .messages::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.messages::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
   border-radius: 10px;
 }
 
@@ -649,7 +640,7 @@ aside {
 /* ReactQuill Styling */
 .quill {
   width: 100%;
-  margin-top: 0.5 rem;
+  margin-top: 0.5rem;
 }
 
 .ql-container {
