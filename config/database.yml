@@ -81,8 +81,8 @@ production:
   primary: &primary_production
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
-    database: messenger_production
-    username: messenger
+    database: <%= ENV['DATABASE_DATABASE'] %>
+    username: <%= ENV['DATABASE_USERNAME'] %>
     password: <%= ENV["MESSENGER_DATABASE_PASSWORD"] %>
   cache:
     <<: *primary_production
