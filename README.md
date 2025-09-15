@@ -47,6 +47,20 @@ The app architecture is a monolith Rails app, which provides a single view templ
 
 [Messenger](https://messenger-lr1s.onrender.com) deployed on Render
 
+Login with one of the following sample accounts, or create your own!
+
+- Batman:
+
+  - email: bruce.wayne@wayneenterprises.com,
+  - password: gotham123
+
+- Superman:
+  - email: clark.kent@dailyplanet.com,
+  - password: krypton123
+- The Joker:
+  - email: mrj@arkhamasylum.com,
+  - password: chaos123
+
 ### What I learned
 
 - How to build custom session-based authentication
