@@ -1,0 +1,90 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Main Container */
+.mainContainer {
+  display: flex;
+  height: calc(100vh - 80px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+/* Main Content Area */
+main {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+main h2 {
+  color: #4a5568;
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 300;
+}
+
+/* Glass Effect Enhancement */
+.mainContainer > *,
+nav {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Smooth Animations */
+* {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus Indicators for Accessibility */
+button:focus,
+input:focus,
+a:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mainContainer {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .profileContainer {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  nav {
+    padding: 1rem;
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
