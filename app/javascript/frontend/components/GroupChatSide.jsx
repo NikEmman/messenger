@@ -6,26 +6,45 @@ export default function GroupChatSide({
   user,
   onClick,
 }) {
-  const members = conversation.members.map((member) => {
-    if (member.id !== user.id) {
-      return (
-        <span key={member.id}>
-          <img width={"30px"} src={member.avatar_url} alt="avatar" />
-        </span>
-      );
-    }
-    if (!conversation.topic && conversation.members.length === 1) {
-      return <span key={member.id}>{member.name}</span>;
-    }
-  });
+  // Get other members (exclude current user)
+  const otherMembers = conversation.members.filter(
+    (member) => member.id !== user.id
+  );
+
+  // For small stacked avatars (show up to 5)
+  const maxVisibleAvatars = 5;
+  const visibleMembers = otherMembers.slice(0, maxVisibleAvatars);
+  const overflowCount = otherMembers.length - maxVisibleAvatars;
 
   return (
     <div className="groupChat">
-      <p onClick={onClick}>{conversation.topic || members}</p>
+      <div className="groupChatContent" onClick={onClick}>
+        <div className="stackedAvatars">
+          {visibleMembers.map((member, index) => (
+            <img
+              key={member.id}
+              width={"24px"}
+              src={member.avatar_url}
+              alt={member.name || member.email}
+              className="stackedAvatar"
+              style={{
+                zIndex: visibleMembers.length - index,
+                marginLeft: index > 0 ? "-12px" : "0",
+              }}
+            />
+          ))}
+          {overflowCount > 0 && (
+            <span className="avatarOverflow">+{overflowCount}</span>
+          )}
+        </div>
+        <p className="groupChatTopic">{conversation.topic}</p>
+      </div>
       <button
-        key={conversation.id}
         className="deleteBtn"
-        onClick={onDeleteClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          onDeleteClick();
+        }}
       >
         Del
       </button>
