@@ -1,0 +1,30 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mode": {
+    "Architect": {
+      "prompt": "Lead the TDD cycle. Follow the instructions in AGENTS.md exactly.",
+      "tools": {
+        "bash": true,
+        "read": true,
+        "edit": false
+      }
+    },
+    "TestWriter": {
+      "prompt": "Focus on creating failing RSpec and Vitest tests. Follow Rails 8 best practices.",
+      "tools": {
+        "bash": true,
+        "read": true,
+        "write": true
+      }
+    },
+    "Coder": {
+      "prompt": "Implement code to pass tests. Fix Rubocop offenses automatically using 'bundle exec rubocop -a'.",
+      "tools": {
+        "bash": true,
+        "read": true,
+        "write": true,
+        "edit": true
+      }
+    }
+  }
+}
