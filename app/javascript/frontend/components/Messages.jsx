@@ -39,12 +39,28 @@ export default function Messages() {
       (conversation) => conversation.id !== id
     );
     setConversations(newConversations);
+    if (conversationId === id) {
+      setConversationId(null);
+    }
   };
 
-  const handleMemberAdded = (newUser) => {
+  const handleMemberAdded = (newMember) => {
     const newConversations = conversations.map((conversation) => {
       if (conversation.id === conversationId) {
-        return { ...conversation, members: [...conversation.members, newUser] };
+        return { ...conversation, members: [...conversation.members, newMember] };
+      }
+      return conversation;
+    });
+    setConversations(newConversations);
+  };
+
+  const handleMemberRemoved = (removedUserId) => {
+    const newConversations = conversations.map((conversation) => {
+      if (conversation.id === conversationId) {
+        return {
+          ...conversation,
+          members: conversation.members.filter((member) => member.id !== removedUserId),
+        };
       }
       return conversation;
     });
@@ -143,6 +159,8 @@ export default function Messages() {
             user={user}
             handleMessageSent={handleMessageSent}
             handleMemberAdded={handleMemberAdded}
+            handleMemberRemoved={handleMemberRemoved}
+            handleConversationDeleted={handleConversationDelete}
           />
         ) : (
           <h2>Select a conversation</h2>

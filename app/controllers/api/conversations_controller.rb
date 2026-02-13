@@ -4,12 +4,12 @@ module Api
 
     def index
       if @current_user
-        conversations = @current_user.conversations.includes(:users, :messages).map do |conversation|
+        conversations = @current_user.conversations.includes(:users, :conversation_users, :messages).map do |conversation|
           {
             id: conversation.id,
             topic: conversation.topic,
             messages: conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } },
-            members: conversation.users.map { |user| user_response(user) }
+            members: conversation.conversation_users.map { |cu| member_response(cu) }
           }
         end
       else
@@ -24,14 +24,14 @@ module Api
     def create
       conversation = Conversation.create!(conversation_params)
       if conversation
-        ConversationUser.create!(user_id: @current_user.id, conversation_id: conversation.id)
+        conversation_user = ConversationUser.create!(user_id: @current_user.id, conversation_id: conversation.id)
         render json: {
           status: :created,
           conversation: {
             id: conversation.id,
             topic: conversation.topic,
             messages: [],
-            members: conversation.users.map { |user| user_response(user) }
+            members: conversation.conversation_users.map { |cu| member_response(cu) }
           },
           message: "Conversation created successfully"
         }
@@ -41,13 +41,13 @@ module Api
     end
 
     def show
-      conversation = Conversation.includes(:users, :messages).find_by(id: params[:id])
+      conversation = Conversation.includes(:users, :conversation_users, :messages).find_by(id: params[:id])
       if conversation
         content = conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } }
         render json: {
           id: conversation.id,
           messages: content,
-          members: conversation.users.map { |user| user_response(user) }
+          members: conversation.conversation_users.map { |cu| member_response(cu) }
         }
       else
         render json: { error: "Conversation not found" }, status: :not_found
@@ -64,6 +64,17 @@ module Api
 
     def conversation_params
       params.require(:conversation).permit(:topic)
+    end
+
+    def member_response(conversation_user)
+      user = conversation_user.user
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatar_url: avatar_url(user.profile),
+        membership_id: conversation_user.id
+      }
     end
 
     def user_response(user)

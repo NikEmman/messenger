@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
@@ -10,12 +10,17 @@ export default function Conversation({
   user,
   handleMessageSent,
   handleMemberAdded,
+  handleMemberRemoved,
+  handleConversationDeleted,
 }) {
   const [message, setMessage] = useState("");
   const [showUserList, setShowUserList] = useState(false);
+  const [showMembersModal, setShowMembersModal] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selection, setSelection] = useState(null);
   const [userList, setUserList] = useState([]);
+  const [removingId, setRemovingId] = useState(null);
+  const dialogRef = useRef(null);
   const { url } = useContext(AppContext);
 
   const messages =
@@ -47,6 +52,7 @@ export default function Conversation({
     handleNotificationChange("");
     setMessage(content);
   };
+
   const participants = conversation.members.map((member, index) => {
     return (
       <span key={member.id}>
@@ -66,6 +72,16 @@ export default function Conversation({
           setUserList(data.users);
         }
       });
+  };
+
+  const openMembersModal = () => {
+    setShowMembersModal(true);
+    dialogRef.current?.showModal();
+  };
+
+  const closeMembersModal = () => {
+    setShowMembersModal(false);
+    dialogRef.current?.close();
   };
 
   const sendMessage = () => {
@@ -97,6 +113,7 @@ export default function Conversation({
   const onSearchChange = (e) => {
     setSearchText(e.target.value);
   };
+
   const onCancelClick = () => {
     setSelection(null);
     setShowUserList(false);
@@ -131,13 +148,45 @@ export default function Conversation({
       .then((data) => {
         if (data.status === "created") {
           handleNotificationChange("Added member");
-          setUserList(userList.filter((user) => user.id !== selection));
-          const addedUser = userList.find((user) => user.id == selection);
-          handleMemberAdded(addedUser);
+          handleMemberAdded(data.member);
+          setUserList(userList.filter((u) => u.id !== selection));
           setShowUserList(false);
         }
       })
       .catch((error) => console.error("Error adding member:", error));
+  };
+
+  const handleRemoveMember = (membershipId, memberName) => {
+    if (!window.confirm(`Remove ${memberName} from this conversation?`)) {
+      return;
+    }
+
+    setRemovingId(membershipId);
+
+    fetch(`${url}/api/conversation_users/${membershipId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      mode: "cors",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.conversation_deleted) {
+          handleNotificationChange("Conversation deleted (no members remaining)");
+          handleConversationDeleted(conversation.id);
+          closeMembersModal();
+        } else {
+          handleNotificationChange("Member removed");
+          handleMemberRemoved(data.removed_user_id);
+        }
+      })
+      .catch((error) => {
+        console.error("Error removing member:", error);
+        handleNotificationChange("Failed to remove member");
+      })
+      .finally(() => {
+        setRemovingId(null);
+      });
   };
 
   const userSelection = userList ? (
@@ -176,11 +225,52 @@ export default function Conversation({
         {showUserList ? (
           userSelection
         ) : (
-          <button className="smallBtn" onClick={onAddUserClick}>
-            Add user
-          </button>
+          <div className="headerButtons">
+            <button className="smallBtn" onClick={onAddUserClick}>
+              Add user
+            </button>
+            <button className="smallBtn" onClick={openMembersModal}>
+              Manage members
+            </button>
+          </div>
         )}
       </div>
+      
+      <dialog ref={dialogRef} className="membersModal">
+        <div className="membersModalContent">
+          <h2>Members</h2>
+          <ul className="membersList">
+            {conversation.members.map((member) => (
+              <li key={member.membership_id} className="memberItem">
+                <div className="memberInfo">
+                  <img 
+                    src={member.avatar_url} 
+                    alt={member.name || member.email}
+                    className="memberAvatar"
+                  />
+                  <span className="memberName">
+                    {member.name || member.email}
+                    {member.id === user.id && " (you)"}
+                  </span>
+                </div>
+                {member.id !== user.id && (
+                  <button
+                    className="removeMemberBtn"
+                    onClick={() => handleRemoveMember(member.membership_id, member.name || member.email)}
+                    disabled={removingId === member.membership_id}
+                  >
+                    {removingId === member.membership_id ? "Removing..." : "Remove"}
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <button className="closeModalBtn" onClick={closeMembersModal}>
+            Close
+          </button>
+        </div>
+      </dialog>
+
       <div className="messages">{messages}</div>
       <button onClick={sendMessage}>Send</button>
       <ReactQuill value={message} onChange={handleMessageChange} />

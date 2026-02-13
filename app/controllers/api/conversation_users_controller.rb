@@ -5,8 +5,16 @@ module Api
     def create
       conversation_user = ConversationUser.create!(conversation_id: params["conversation_id"], user_id: params["user_id"])
       if conversation_user
+        user = conversation_user.user
         render json: {
-          status: "created"
+          status: "created",
+          member: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            avatar_url: avatar_url(user.profile),
+            membership_id: conversation_user.id
+          }
         }, status: :created
       else
         render json: { status: :unprocessable_entity }
@@ -21,6 +29,7 @@ module Api
       end
 
       conversation = conversation_user.conversation
+      removed_user_id = conversation_user.user_id
 
       # Authorization: current user must be in the conversation
       unless conversation.users.exists?(@current_user.id)
@@ -33,16 +42,28 @@ module Api
       # Check if conversation has any remaining users
       if conversation.users.empty?
         conversation.destroy
-        return render json: {
+        return render json: { 
           message: "User removed and conversation deleted (was empty)",
-          conversation_deleted: true
+          conversation_deleted: true,
+          removed_user_id: removed_user_id
         }, status: :ok
       end
 
-      render json: {
+      render json: { 
         message: "User removed from conversation",
-        conversation_deleted: false
+        conversation_deleted: false,
+        removed_user_id: removed_user_id
       }, status: :ok
+    end
+
+    private
+
+    def default_avatar_url
+      request.base_url + ActionController::Base.helpers.asset_path("default_avatar.jpg")
+    end
+
+    def avatar_url(profile)
+      profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
     end
   end
 end
