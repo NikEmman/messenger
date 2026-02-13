@@ -1,4 +1,5 @@
 import React from "react";
+import "../styles/GroupChatSide.css";
 
 export default function GroupChatSide({
   onDeleteClick,
