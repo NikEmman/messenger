@@ -457,6 +457,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   border: 1px solid #e9ecef;
+  position: relative;
 }
 
 .newConv input {
@@ -501,4 +502,21 @@
   color: #667eea;
   font-style: italic;
   margin-top: 2rem;
+}
+
+/* Glass Effect for newConv */
+.newConv::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
 }
