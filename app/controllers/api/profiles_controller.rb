@@ -3,7 +3,7 @@ module Api
     def create
       @profile = Profile.new(profile_params)
       if @profile.save
-        render json: { profile: @profile }, status: :created
+        render json: { profile: profile_response(@profile) }, status: :created
       else
         render json: { errors: @profile.errors.full_messages }, status: :unprocessable_entity
       end
