@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import "../styles/Profile.css";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
 

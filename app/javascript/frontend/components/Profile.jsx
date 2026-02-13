@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
+import "../styles/Profile.css";
 import { Navigate, useParams } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import ProfileForm from "./ProfileForm";
