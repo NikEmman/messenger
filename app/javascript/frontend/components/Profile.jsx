@@ -21,7 +21,8 @@ export default function Profile() {
       .then((data) => {
         if (data.status === "not_found") setProfile({});
         else setProfile(data);
-      });
+      })
+      .catch((error) => console.error("Unable to load profile: ", error));
   }, [id]);
 
   const handleCreateProfile = (data) => {

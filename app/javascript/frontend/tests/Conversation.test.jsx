@@ -64,6 +64,7 @@ describe("Conversation Component", () => {
         }),
     });
 
+    // Render the component
     await act(async () => {
       renderConversation(defaultContextValue, {
         conversation: mockConversation,
@@ -72,45 +73,50 @@ describe("Conversation Component", () => {
         handleMessageSent: mockHandleMessageSent,
         handleMemberAdded: mockHandleMemberAdded,
       });
-
-      // Ensure the "Add user" button renders
-      const addUserButton = await waitFor(() => screen.getByText("Add user"));
-      fireEvent.click(addUserButton);
-
-      // Wait for user list to load
-      await waitFor(() => {
-        expect(screen.getByPlaceholderText("Search users")).toBeInTheDocument();
-      });
-
-      // Mock the fetch response for adding a user
-      global.fetch.mockResolvedValueOnce({
-        json: () =>
-          Promise.resolve({
-            status: "created",
-          }),
-      });
-
-      // Search for a user and select from dropdown
-      fireEvent.change(screen.getByPlaceholderText("Search users"), {
-        target: { value: "charlie@example.com" },
-      });
-      fireEvent.change(screen.getByRole("listbox"), { target: { value: "3" } });
-
-      // Click "Add" button to add the user
-      fireEvent.click(
-        screen.getByText((content, element) => {
-          return (
-            element.tagName.toLowerCase() === "button" &&
-            content.trim() === "Add"
-          );
-        })
-      );
     });
+
+    // Ensure the "Add user" button renders
+    const addUserButton = screen.getByText("Add user");
+    fireEvent.click(addUserButton);
+
+    // Wait for user list to load
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Search users")).toBeInTheDocument();
+    });
+
+    // Mock the fetch response for adding a user
+    global.fetch.mockResolvedValueOnce({
+      json: () =>
+        Promise.resolve({
+          status: "created",
+          member: {
+            id: "3",
+            name: "Charlie",
+            email: "charlie@example.com",
+          },
+        }),
+    });
+
+    // Search for a user and select from dropdown
+    fireEvent.change(screen.getByPlaceholderText("Search users"), {
+      target: { value: "charlie@example.com" },
+    });
+    fireEvent.change(screen.getByRole("listbox"), { target: { value: "3" } });
+
+    // Click "Add" button to add the user
+    fireEvent.click(
+      screen.getByText((content, element) => {
+        return (
+          element.tagName.toLowerCase() === "button" &&
+          content.trim() === "Add"
+        );
+      })
+    );
 
     await waitFor(() => {
       // Assert the API call
       expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/conversation_users",
+        "http://localhost:3000/api/conversation_users",
         expect.any(Object)
       );
       // Assert notifications and callback
