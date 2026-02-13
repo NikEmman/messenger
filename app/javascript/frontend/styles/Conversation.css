@@ -168,8 +168,8 @@
   padding: 0;
   background: none;
   border: none;
- 50%;
-   border-radius: transition: all 0.3s ease;
+  border: radius 50%;
+  transition: all 0.3s ease;
 }
 
 .messageContainer a:hover {
