@@ -296,7 +296,7 @@ export default function Conversation({
                 </div>
                 {member.id === user.id ? (
                   <button
-                    className="leaveMemberBtn"
+                    className="leaveMemberBtn modalActionBtn"
                     onClick={handleLeaveConversation}
                     disabled={removingId === member.membership_id}
                   >
@@ -306,7 +306,7 @@ export default function Conversation({
                   </button>
                 ) : (
                   <button
-                    className="removeMemberBtn"
+                    className="removeMemberBtn modalActionBtn"
                     onClick={() =>
                       handleRemoveMember(
                         member.membership_id,
