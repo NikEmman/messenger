@@ -1,6 +1,8 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
+import "../styles/Navbar.css";
+
 export default function Navbar() {
   const { user, loggedInStatus, handleSuccessfulLogOut, url } =
     useContext(AppContext);
