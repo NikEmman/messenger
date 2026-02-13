@@ -1,8 +1,10 @@
-const production = {
-  url: "https://messenger-lr1s.onrender.com/",
+// Dynamically determine the API URL based on the current host
+// This allows the app to work both in development and production without hardcoding URLs
+const getApiUrl = () => {
+  const currentHost = window.location.origin;
+  return currentHost;
 };
-const development = {
-  url: "http://localhost:3000",
+
+export const config = {
+  url: getApiUrl(),
 };
-export const config =
-  process.env.NODE_ENV === "production" ? production : development;
