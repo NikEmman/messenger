@@ -13,19 +13,19 @@ const routes = [
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "",
+        index: true,
         element: <Login />,
       },
       {
-        path: "/messages",
+        path: "messages",
         element: <Messages />,
       },
       {
-        path: "/signup",
+        path: "signup",
         element: <SignUp />,
       },
       {
-        path: "/profile/:id",
+        path: "profile/:id",
         element: <Profile />,
       },
     ],
