@@ -849,3 +849,26 @@ nav {
 .conversationHeader .smallBtn {
   margin-top: 0.5rem;
 }
+
+.leaveMemberBtn {
+  background: linear-gradient(135deg, #ed8936, #dd6b20);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(221, 107, 32, 0.3);
+}
+
+.leaveMemberBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(221, 107, 32, 0.4);
+}
+
+.leaveMemberBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

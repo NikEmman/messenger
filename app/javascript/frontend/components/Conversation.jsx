@@ -29,7 +29,7 @@ export default function Conversation({
         const className = msg.user_id === user.id ? "myMessage" : "message";
 
         const member = conversation.members.find(
-          (member) => member.id === msg.user_id
+          (member) => member.id === msg.user_id,
         );
 
         return (
@@ -53,14 +53,9 @@ export default function Conversation({
     setMessage(content);
   };
 
-  const participants = conversation.members.map((member, index) => {
-    return (
-      <span key={member.id}>
-        {member.name || member.email}
-        {index < conversation.members.length - 1 && " | "}
-      </span>
-    );
-  });
+  const participants = conversation.members.map((member) => (
+    <span key={member.id}>{member.name || member.email}</span>
+  ));
 
   const onAddUserClick = () => {
     handleNotificationChange("");
@@ -120,15 +115,15 @@ export default function Conversation({
   };
 
   const filteredUsers = userList
-    .filter((user) => {
+    .filter((u) => {
       return (
-        user.email?.includes(searchText) &&
-        !conversation.members.some((member) => member.email === user.email)
+        u.email?.includes(searchText) &&
+        !conversation.members.some((member) => member.email === u.email)
       );
     })
-    .map((user) => (
-      <option key={user.id} value={user.id}>
-        {user.name || user.email}
+    .map((u) => (
+      <option key={u.id} value={u.id}>
+        {u.name || u.email}
       </option>
     ));
 
@@ -172,7 +167,9 @@ export default function Conversation({
       .then((response) => response.json())
       .then((data) => {
         if (data.conversation_deleted) {
-          handleNotificationChange("Conversation deleted (no members remaining)");
+          handleNotificationChange(
+            "Conversation deleted (no members remaining)",
+          );
           handleConversationDeleted(conversation.id);
           closeMembersModal();
         } else {
@@ -183,6 +180,50 @@ export default function Conversation({
       .catch((error) => {
         console.error("Error removing member:", error);
         handleNotificationChange("Failed to remove member");
+      })
+      .finally(() => {
+        setRemovingId(null);
+      });
+  };
+
+  const handleLeaveConversation = () => {
+    if (!window.confirm("Leave this conversation?")) {
+      return;
+    }
+
+    const currentUserMembership = conversation.members.find(
+      (member) => member.id === user.id,
+    );
+
+    if (!currentUserMembership) return;
+
+    setRemovingId(currentUserMembership.membership_id);
+
+    fetch(
+      `${url}/api/conversation_users/${currentUserMembership.membership_id}`,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        mode: "cors",
+      },
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.conversation_deleted) {
+          handleNotificationChange(
+            "You left the conversation (conversation deleted)",
+          );
+          handleConversationDeleted(conversation.id);
+        } else {
+          handleNotificationChange("You left the conversation");
+          handleConversationDeleted(conversation.id);
+        }
+        closeMembersModal();
+      })
+      .catch((error) => {
+        console.error("Error leaving conversation:", error);
+        handleNotificationChange("Failed to leave conversation");
       })
       .finally(() => {
         setRemovingId(null);
@@ -235,7 +276,7 @@ export default function Conversation({
           </div>
         )}
       </div>
-      
+
       <dialog ref={dialogRef} className="membersModal">
         <div className="membersModalContent">
           <h2>Members</h2>
@@ -243,8 +284,8 @@ export default function Conversation({
             {conversation.members.map((member) => (
               <li key={member.membership_id} className="memberItem">
                 <div className="memberInfo">
-                  <img 
-                    src={member.avatar_url} 
+                  <img
+                    src={member.avatar_url}
                     alt={member.name || member.email}
                     className="memberAvatar"
                   />
@@ -253,13 +294,30 @@ export default function Conversation({
                     {member.id === user.id && " (you)"}
                   </span>
                 </div>
-                {member.id !== user.id && (
+                {member.id === user.id ? (
                   <button
-                    className="removeMemberBtn"
-                    onClick={() => handleRemoveMember(member.membership_id, member.name || member.email)}
+                    className="leaveMemberBtn"
+                    onClick={handleLeaveConversation}
                     disabled={removingId === member.membership_id}
                   >
-                    {removingId === member.membership_id ? "Removing..." : "Remove"}
+                    {removingId === member.membership_id
+                      ? "Leaving..."
+                      : "Leave"}
+                  </button>
+                ) : (
+                  <button
+                    className="removeMemberBtn"
+                    onClick={() =>
+                      handleRemoveMember(
+                        member.membership_id,
+                        member.name || member.email,
+                      )
+                    }
+                    disabled={removingId === member.membership_id}
+                  >
+                    {removingId === member.membership_id
+                      ? "Removing..."
+                      : "Remove"}
                   </button>
                 )}
               </li>
