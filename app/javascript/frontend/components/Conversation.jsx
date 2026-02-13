@@ -1,4 +1,5 @@
 import React, { useState, useContext, useRef } from "react";
+import "../styles/Conversation.css";
 import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
