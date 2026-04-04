@@ -1,69 +1,85 @@
 .errorPage {
-  height: 100vh;
+  min-height: calc(100vh - var(--nav-height, 60px));
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-evenly;
-  gap: 5em;
+  justify-content: center;
+  gap: 1.5rem;
+  background: var(--bg-muted, #f0f2f5);
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.error-container h1 {
+  font-size: 5rem;
+  font-weight: 800;
+  color: var(--primary, #5865f2);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+}
+
+.errorPage h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #060607);
+}
+
+.errorPage p {
+  color: var(--text-secondary, #4e5058);
+  font-size: 0.95rem;
+  max-width: 360px;
+}
+
+.errorPage a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--primary, #5865f2);
+  color: #fff;
+  text-decoration: none;
+  border-radius: var(--radius-sm, 4px);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.errorPage a:hover {
+  background: var(--primary-dark, #4752c4);
 }
 
 .errorPage img {
-  width: 8vw;
-  animation: orbit infinite ease-in-out 6s;
-  position: absolute;
-  top: 35%;
-}
-.error-container {
-  position: relative;
-}
-.error-container h1 {
-  position: relative;
-  z-index: 2;
-  backdrop-filter: blur(5px);
-}
-@keyframes orbit {
-  0% {
-    left: -50%;
-    z-index: 1;
-    scale: 0.7;
-    transform: translate(0%, -50%);
-  }
-  25% {
-    scale: 0.3;
-    transform: translate(-100%, -50%);
-  }
-  50% {
-    left: 120%;
-    z-index: 1;
-  }
-  50.001% {
-    z-index: 3;
-  }
-  75% {
-    scale: 1;
-  }
-  100% {
-    left: -50%;
-    transform: translate(0%, -50%);
-    z-index: 3;
-    scale: 0.72;
-  }
+  width: 80px;
+  height: 80px;
+  animation: float 3s ease-in-out infinite;
+  opacity: 0.6;
 }
 
-.error-message {
-  color: red;
-  font-size: 12px;
-  margin-top: -10px;
-  margin-bottom: 10px;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
 }
+
+/* Field-level error reused across pages */
+.error-message {
+  color: var(--danger, #f04747);
+  font-size: 0.78rem;
+  margin-top: 0.25rem;
+  display: block;
+  font-weight: 500;
+}
+
 @media only screen and (max-device-width: 768px) {
   aside {
     min-width: 30vw;
-  }
-  .newConv input {
-    min-width: 100%;
-  }
-  .newConv button {
-    min-width: 100%;
   }
 }
