@@ -100,7 +100,7 @@ describe("Messages Component", () => {
       renderMessages(defaultContextValue);
     });
 
-    const deleteButton = screen.getByRole("button", { name: /del/i });
+    const deleteButton = screen.getByRole("button", { name: "✕" });
 
     await act(async () => {
       fireEvent.click(deleteButton);

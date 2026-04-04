@@ -11,6 +11,9 @@ import "@testing-library/jest-dom";
 import Conversation from "../components/Conversation";
 import { AppContext } from "../components/AppContext";
 
+// Use the __mocks__/react-quill.jsx stub so we can interact with the editor
+jest.mock("react-quill");
+
 // Mock fetch
 global.fetch = jest.fn();
 
@@ -134,7 +137,7 @@ describe("Conversation Component", () => {
       });
     });
 
-    expect(screen.getByText("No messages in this conversation")).toBeInTheDocument();
+    expect(screen.getByText("No messages yet — say hello!")).toBeInTheDocument();
   });
 
   it("calls handleMemberAdded when a user is added", async () => {
@@ -543,9 +546,11 @@ describe("Conversation Component", () => {
       });
     });
 
-    // Click Send button
-    const sendButton = screen.getByRole("button", { name: /send/i });
-    fireEvent.click(sendButton);
+    // Type a message then send
+    fireEvent.change(screen.getByTestId("quill-editor"), {
+      target: { value: "Hello!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /send/i }));
 
     await waitFor(() => {
       // Verify API call
@@ -582,9 +587,11 @@ describe("Conversation Component", () => {
       });
     });
 
-    // Click Send button
-    const sendButton = screen.getByRole("button", { name: /send/i });
-    fireEvent.click(sendButton);
+    // Type a message then send
+    fireEvent.change(screen.getByTestId("quill-editor"), {
+      target: { value: "Hello!" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /send/i }));
 
     await waitFor(() => {
       expect(mockHandleNotificationChange).toHaveBeenCalledWith("Failed to send message");

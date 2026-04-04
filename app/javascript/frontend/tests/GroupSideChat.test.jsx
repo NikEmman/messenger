@@ -71,7 +71,7 @@ describe("GroupChatSide", () => {
         onDeleteClick={mockOnDeleteClick}
       />
     );
-    fireEvent.click(screen.getByText("Del"));
+    fireEvent.click(screen.getByText("✕"));
     expect(mockOnDeleteClick).toHaveBeenCalled();
   });
 

@@ -42,7 +42,7 @@ describe("Navbar Component", () => {
   test("renders all navigation links when logged in", () => {
     renderNavbar();
 
-    expect(screen.getByText("Messages")).toBeInTheDocument();
+    expect(screen.getByText("Messenger")).toBeInTheDocument();
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Logout")).toBeInTheDocument();
   });
@@ -99,7 +99,7 @@ describe("Navbar Component", () => {
   test("navigates to correct routes when clicking links", () => {
     renderNavbar();
 
-    const messagesLink = screen.getByText("Messages");
+    const messagesLink = screen.getByText("Messenger");
     const profileLink = screen.getByText("Profile");
 
     expect(messagesLink.getAttribute("href")).toBe("/messages");
