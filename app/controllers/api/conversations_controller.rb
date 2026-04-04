@@ -4,11 +4,17 @@ module Api
 
     def index
       if @current_user
-        conversations = @current_user.conversations.includes(:users, :conversation_users, :messages).map do |conversation|
+        conversations = @current_user.conversations
+          .includes(:users, :conversation_users, :messages)
+          .sort_by { |c| c.messages.map(&:created_at).max || c.created_at }
+          .reverse
+          .map do |conversation|
           {
             id: conversation.id,
             topic: conversation.topic,
-            messages: conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } },
+            messages: conversation.messages.order(:created_at).map { |message|
+              { id: message.id, body: message.body.body, user_id: message.user_id, created_at: message.created_at }
+            },
             members: conversation.conversation_users.map { |cu| member_response(cu) }
           }
         end
