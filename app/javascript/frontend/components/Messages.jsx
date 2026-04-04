@@ -12,6 +12,13 @@ export default function Messages() {
   const { user, loggedInStatus, url } = useContext(AppContext);
   const [notification, setNotification] = useState("");
 
+  // Auto-dismiss notifications after 4 seconds
+  useEffect(() => {
+    if (!notification) return;
+    const timer = setTimeout(() => setNotification(""), 4000);
+    return () => clearTimeout(timer);
+  }, [notification]);
+
   const handleGroupChatSideClick = (id) => {
     setNotification("");
     setConversationId(id);
@@ -137,6 +144,7 @@ export default function Messages() {
         conversation={conversation}
         user={user}
         onClick={() => handleGroupChatSideClick(conversation.id)}
+        isActive={conversation.id === conversationId}
       />
     ));
 

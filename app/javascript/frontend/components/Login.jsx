@@ -43,7 +43,6 @@ export default function Login() {
     e.preventDefault();
     setLoginError("");
     const newErrors = validateForm(formData);
-    console.log("New Errors:", newErrors);
     setFormErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
