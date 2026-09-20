@@ -81,6 +81,3 @@ production:
   primary: &primary_production
     <<: *default
     url: <%= ENV['DATABASE_URL'] %>
-    database: <%= ENV['DATABASE_DATABASE'] %>
-    username: <%= ENV['DATABASE_USERNAME'] %>
-    password: <%= ENV["MESSENGER_DATABASE_PASSWORD"] %>
