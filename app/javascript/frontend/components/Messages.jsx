@@ -2,10 +2,12 @@ import React, { useState, useContext, useEffect } from "react";
 import { AppContext } from "./AppContext";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
+import Spinner from "./Spinner";
 import { Navigate } from "react-router-dom";
 
 export default function Messages() {
   const [conversations, setConversations] = useState([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
   const [conversationId, setConversationId] = useState(null);
   const [topic, setTopic] = useState("");
   const [formErrors, setFormErrors] = useState({});
@@ -114,7 +116,8 @@ export default function Messages() {
     fetch(`${url}/api/conversations`)
       .then((response) => response.json())
       .then((data) => setConversations(data.conversations))
-      .catch((error) => console.error("Error fetching conversations:", error));
+      .catch((error) => console.error("Error fetching conversations:", error))
+      .finally(() => setConversationsLoading(false));
   }, []);
 
   const onDeleteClick = (id) => {
@@ -176,7 +179,11 @@ export default function Messages() {
       </main>
       <aside>
         <div className="conversationsList">
-          {conversationsList || <p>No conversations available</p>}
+          {conversationsLoading ? (
+            <Spinner label="Loading conversations..." className="sidebarSpinner" />
+          ) : (
+            conversationsList || <p>No conversations available</p>
+          )}
         </div>
         <div className="newConv">
           <input

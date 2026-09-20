@@ -3,10 +3,12 @@ import "../styles/Profile.css";
 import { Navigate, useParams } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import ProfileForm from "./ProfileForm";
+import Spinner from "./Spinner";
 
 export default function Profile() {
   const { id } = useParams();
   const [profile, setProfile] = useState({});
+  const [profileLoading, setProfileLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const { user, loggedInStatus, url } = useContext(AppContext);
 
@@ -17,13 +19,15 @@ export default function Profile() {
   const isCurrentUser = user.id === parseInt(id);
 
   useEffect(() => {
+    setProfileLoading(true);
     fetch(`${url}/api/profiles/${id}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.status === "not_found") setProfile({});
         else setProfile(data);
       })
-      .catch((error) => console.error("Unable to load profile: ", error));
+      .catch((error) => console.error("Unable to load profile: ", error))
+      .finally(() => setProfileLoading(false));
   }, [id]);
 
   const handleCreateProfile = (data) => {
@@ -74,6 +78,14 @@ export default function Profile() {
       })
       .catch((error) => console.error("Unable to update: ", error));
   };
+
+  if (profileLoading) {
+    return (
+      <div className="formPage">
+        <Spinner label="Loading profile..." />
+      </div>
+    );
+  }
 
   if (Object.keys(profile).length === 0) {
     return (

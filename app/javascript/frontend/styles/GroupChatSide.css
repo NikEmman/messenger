@@ -8,6 +8,15 @@ aside {
   overflow: hidden;
 }
 
+.sidebarSpinner .spinnerLabel {
+  color: var(--sidebar-text);
+}
+
+.sidebarSpinner .spinner {
+  border-color: var(--sidebar-border);
+  border-top-color: var(--primary);
+}
+
 /* ─── Conversations list ──────────────────────────────────────────────── */
 .conversationsList {
   flex: 1;
