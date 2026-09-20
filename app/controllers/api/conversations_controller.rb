@@ -5,7 +5,10 @@ module Api
     def index
       if @current_user
         conversations = @current_user.conversations
-          .includes(:users, :conversation_users, :messages)
+          .includes(
+            messages: :rich_text_body,
+            conversation_users: { user: { profile: { avatar_attachment: :blob } } }
+          )
           .sort_by { |c| c.messages.map(&:created_at).max || c.created_at }
           .reverse
           .map do |conversation|
@@ -47,7 +50,10 @@ module Api
     end
 
     def show
-      conversation = Conversation.includes(:users, :conversation_users, :messages).find_by(id: params[:id])
+      conversation = Conversation.includes(
+        messages: :rich_text_body,
+        conversation_users: { user: { profile: { avatar_attachment: :blob } } }
+      ).find_by(id: params[:id])
       if conversation
         content = conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } }
         render json: {
