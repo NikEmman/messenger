@@ -41,7 +41,7 @@ module Api
 
     def maybe_enqueue_cleanup
       return unless response.successful?
-      return unless Message.where("created_at < ?", 1.week.ago).where.not(id: 1..14).exists?
+      return unless Message.expired.exists?
 
       if Rails.env.production?
         CleanupOldMessagesJob.perform_later

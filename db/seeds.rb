@@ -140,7 +140,7 @@ puts "📝 Creating messages..."
 # apart, so timestamps always move forward within a thread.
 def seed_messages(conversation, started_minutes_ago, lines)
   lines.each_with_index do |(user, body), index|
-    Message.create!(user: user, conversation: conversation, body: body,
+    Message.create!(user: user, conversation: conversation, body: body, seeded: true,
                     created_at: (started_minutes_ago - index * 7).minutes.ago)
   end
 end

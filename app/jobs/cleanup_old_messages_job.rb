@@ -1,13 +1,15 @@
 class CleanupOldMessagesJob < ApplicationJob
   queue_as :default
 
-  # This job deletes messages older than one week, excluding messages with IDs 1 to 14 (seeded, demo messages).
-  # It is intended to be run in a production environment to clean up old messages.
-
+  # Deletes visitor messages older than a week, keeping the seeded demo
+  # conversation intact. Intended for the production demo.
   def perform
-    old_messages = Message.where("created_at < ?", 1.week.ago).where.not(id: 1..14)
-    return if old_messages.empty?
+    expired = Message.expired
+    conversation_ids = expired.distinct.pluck(:conversation_id)
+    return if conversation_ids.empty?
 
-    old_messages.delete_all
+    # destroy (not delete_all) so each message's rich-text body goes too.
+    expired.includes(:rich_text_body).find_each(&:destroy)
+    Conversation.where(id: conversation_ids).find_each(&:refresh_last_message_at)
   end
 end

@@ -7,6 +7,11 @@ class Message < ApplicationRecord
 
   after_create :bump_conversation_activity
 
+  RETENTION = 1.week
+
+  # Visitor messages past the retention window; seeded demo messages are kept.
+  scope :expired, -> { where(seeded: false).where(created_at: ...RETENTION.ago) }
+
   # The newest message of each given conversation, in a single query.
   def self.latest_per_conversation(conversation_ids)
     where(id: where(conversation_id: conversation_ids).group(:conversation_id).select("MAX(messages.id)"))
