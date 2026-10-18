@@ -4,6 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import { api } from "../api";
 
+// Seeded demo accounts (also listed in the README) for one-click sign in.
+const DEMO_ACCOUNTS = [
+  { name: "Batman", email: "bruce.wayne@wayneenterprises.com", password: "gotham123" },
+  { name: "Superman", email: "clark.kent@dailyplanet.com", password: "krypton123" },
+  { name: "The Joker", email: "mrj@arkhamasylum.com", password: "chaos123" },
+];
+
 export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
@@ -40,32 +47,24 @@ export default function Login() {
     return errors;
   };
 
+  const signIn = ({ email, password }) => {
+    setLoginError("");
+    api
+      .post("/api/sessions", { user: { email, password } })
+      .then((data) => {
+        handleSuccessfulAuth(data.user);
+        messagesRouter();
+      })
+      .catch((error) => {
+        setLoginError(error.status === 401 ? "Wrong email or password" : error.message);
+      });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    setLoginError("");
     const newErrors = validateForm(formData);
     setFormErrors(newErrors);
-
-    if (Object.keys(newErrors).length === 0) {
-      const data = {
-        user: {
-          email: formData.email,
-          password: formData.password,
-        },
-      };
-
-      api
-        .post("/api/sessions", data)
-        .then((data) => {
-          handleSuccessfulAuth(data.user);
-          messagesRouter();
-        })
-        .catch((error) => {
-          setLoginError(
-            error.status === 401 ? "Wrong email or password" : error.message
-          );
-        });
-    }
+    if (Object.keys(newErrors).length === 0) signIn(formData);
   };
 
   const handleChange = (e) => {
@@ -119,6 +118,18 @@ export default function Login() {
         <button type="submit">Sign In</button>
       </form>
       <Link to="/signup">Create new account</Link>
+
+      <section className="demoLogin" aria-labelledby="demo-heading">
+        <h2 id="demo-heading">Just looking? Try a demo account</h2>
+        <div className="demoButtons">
+          {DEMO_ACCOUNTS.map((account) => (
+            <button key={account.email} type="button" onClick={() => signIn(account)}>
+              {account.name}
+            </button>
+          ))}
+        </div>
+        <p>Tip: sign in as a different hero in a private window to watch messages arrive live.</p>
+      </section>
     </div>
   );
 }

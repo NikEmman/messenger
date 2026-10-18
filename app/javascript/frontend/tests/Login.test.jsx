@@ -136,4 +136,18 @@ describe("Login Component", () => {
       });
     });
   });
+
+  test("signs in with a demo account in one click", async () => {
+    api.post.mockResolvedValueOnce({ user: { email: "clark.kent@dailyplanet.com" } });
+
+    renderWithRouter(<Login />);
+    fireEvent.click(screen.getByRole("button", { name: "Superman" }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith("/api/sessions", {
+        user: { email: "clark.kent@dailyplanet.com", password: "krypton123" },
+      });
+      expect(mockHandleSuccessfulAuth).toHaveBeenCalledWith({ email: "clark.kent@dailyplanet.com" });
+    });
+  });
 });
