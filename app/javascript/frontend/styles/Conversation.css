@@ -35,7 +35,7 @@
   align-items: center;
 }
 
-.members span {
+.members > span {
   display: inline-flex;
   align-items: center;
   padding: 0.125rem 0.5rem;
