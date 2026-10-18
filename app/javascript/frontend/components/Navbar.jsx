@@ -40,8 +40,12 @@ export default function Navbar() {
 
   return (
     <nav>
-      <Link to="/messages">Messenger</Link>
-      <Link to={`/profile/${user.id}`}>Profile</Link>
+      {loggedInStatus === "LOGGED_IN" && (
+        <>
+          <Link to="/messages">Messenger</Link>
+          <Link to={`/profile/${user.id}`}>Profile</Link>
+        </>
+      )}
 
       <button
         className="themeToggle"

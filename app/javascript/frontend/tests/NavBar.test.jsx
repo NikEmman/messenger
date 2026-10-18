@@ -65,6 +65,18 @@ describe("Navbar Component", () => {
     expect(screen.queryByText("Logout")).not.toBeInTheDocument();
   });
 
+  test("does not show navigation links when logged out", () => {
+    renderNavbar({
+      contextValue: {
+        loggedInStatus: "NOT_LOGGED_IN",
+        user: {},
+      },
+    });
+
+    expect(screen.queryByText("Messenger")).not.toBeInTheDocument();
+    expect(screen.queryByText("Profile")).not.toBeInTheDocument();
+  });
+
   test("handles logout successfully", async () => {
     // Mock successful logout response
     global.fetch.mockResolvedValueOnce({
