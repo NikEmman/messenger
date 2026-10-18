@@ -76,7 +76,8 @@ module Api
         id: message.id,
         user_id: message.user_id,
         conversation_id: message.conversation_id,
-        body: message.body.body.to_html,
+        # Rendered as HTML by the client, so strip scripts and event handlers.
+        body: helpers.sanitize(message.body.body.to_html),
         created_at: message.created_at
       }
     end

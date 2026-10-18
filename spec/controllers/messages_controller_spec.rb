@@ -60,6 +60,17 @@ RSpec.describe 'Api::Messages', type: :request do
             .with(a_hash_including(type: "message"))
         end
 
+        it 'sanitizes message HTML so it cannot run scripts' do
+          post messages_path, params: { message: { body: '<b>hi</b><img src=x onerror="alert(1)"><script>alert(2)</script>' } }
+
+          body = json_response['message']['body']
+          expect(body).to include('<b>hi</b>')
+          expect(body).not_to include('onerror', '<script')
+
+          get messages_path
+          expect(json_response['messages'].last['body']).not_to include('onerror')
+        end
+
         it 'ignores a spoofed user_id' do
           post messages_path, params: { message: { body: 'Hi', user_id: other_user.id } }
 
