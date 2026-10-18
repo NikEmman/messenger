@@ -158,8 +158,8 @@
   flex-direction: row-reverse;
 }
 
-/* Avatar link wrapper */
-.messageContainer a {
+/* Avatar (or an equal-width spacer inside a group) */
+.messageAvatar {
   display: block;
   width: 32px;
   height: 32px;
@@ -169,11 +169,11 @@
   text-decoration: none;
 }
 
-.messageContainer a:hover {
+a.messageAvatar:hover {
   opacity: 0.85;
 }
 
-.messageContainer img {
+.messageAvatar img {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -202,7 +202,7 @@
 }
 
 /* Bubble */
-.messageContainer p {
+.messageBubble {
   background: var(--bg);
   color: var(--text-primary);
   padding: 0.625rem 0.875rem;
@@ -216,25 +216,66 @@
 }
 
 /* Rich-text content inside bubbles */
-.messageContainer p p {
+.messageBubble p {
   all: unset;
   display: block;
 }
 
-.messageContainer:not(.myMessage) p {
+.messageContainer:not(.myMessage) .messageBubble {
   border-bottom-left-radius: 4px;
 }
 
-.messageContainer.myMessage p {
+.messageContainer:not(.myMessage):not(.groupStart) .messageBubble {
+  border-top-left-radius: 4px;
+}
+
+.messageContainer.myMessage:not(.groupStart) .messageBubble {
+  border-top-right-radius: 4px;
+}
+
+/* Messages inside a group sit closer together */
+.messageContainer:not(.groupStart) {
+  margin-top: -0.5rem;
+}
+
+.messageSender {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0 0.25rem;
+}
+
+.daySeparator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.5rem 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.daySeparator::before,
+.daySeparator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.messageContainer.myMessage .messageBubble {
   background: var(--primary);
   color: #fff;
   border-color: transparent;
   border-bottom-right-radius: 4px;
 }
 
-.messageContainer.myMessage p strong,
-.messageContainer.myMessage p em,
-.messageContainer.myMessage p u {
+.messageContainer.myMessage .messageBubble strong,
+.messageContainer.myMessage .messageBubble em,
+.messageContainer.myMessage .messageBubble u,
+.messageContainer.myMessage .messageBubble a {
   color: inherit;
 }
 
@@ -518,7 +559,7 @@
     padding: 1rem;
   }
 
-  .messageContainer p {
+  .messageBubble {
     max-width: 80%;
   }
 }

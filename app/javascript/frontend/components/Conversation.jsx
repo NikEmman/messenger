@@ -6,21 +6,38 @@ import Spinner from "./Spinner";
 import MessageEditor from "./MessageEditor";
 import { onInboxEvent, sendTyping } from "../cable";
 
-function formatTime(timestamp) {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  const now = new Date();
-  const diffMs = now - date;
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
 
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+function formatTime(timestamp) {
+  return new Date(timestamp).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+function dayLabel(timestamp) {
+  const date = new Date(timestamp);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  if (date.toDateString() === today.toDateString()) return "Today";
+  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
+  return date.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: date.getFullYear() === today.getFullYear() ? undefined : "numeric",
+  });
+}
+
+const isSameDay = (a, b) =>
+  new Date(a.created_at).toDateString() === new Date(b.created_at).toDateString();
+
+// Consecutive messages from one sender, close together, render as one group.
+function isSameGroup(a, b) {
+  return (
+    Boolean(a && b) &&
+    a.user_id === b.user_id &&
+    isSameDay(a, b) &&
+    Math.abs(new Date(b.created_at) - new Date(a.created_at)) < GROUP_WINDOW_MS
+  );
 }
 
 const TYPING_THROTTLE_MS = 2000;
@@ -158,23 +175,55 @@ export default function Conversation({
 
   const messageList =
     messages.length > 0 ? (
-      messages.map((msg) => {
+      messages.map((msg, i) => {
+        const prev = messages[i - 1];
+        const next = messages[i + 1];
         const isOwn = msg.user_id === user.id;
-        const className = isOwn ? "myMessage" : "message";
         const member = conversation.members.find((m) => m.id === msg.user_id);
+        const startsDay = !prev || !isSameDay(prev, msg);
+        const startsGroup = !isSameGroup(prev, msg);
+        const endsGroup = !isSameGroup(msg, next);
+        const className = [
+          "messageContainer",
+          isOwn ? "myMessage" : "message",
+          startsGroup && "groupStart",
+          endsGroup && "groupEnd",
+        ]
+          .filter(Boolean)
+          .join(" ");
 
         return (
-          <div key={msg.id || msg.body} className={"messageContainer " + className}>
-            <Link to={`/profile/${msg.user_id}`}>
-              <img src={member && member.avatar_url} alt="Avatar" />
-            </Link>
-            <div className="messageBubbleWrapper">
-              <p dangerouslySetInnerHTML={{ __html: msg.body }} />
-              {msg.created_at && (
-                <span className="messageTime">{formatTime(msg.created_at)}</span>
+          <React.Fragment key={msg.id}>
+            {startsDay && (
+              <div className="daySeparator" role="separator">
+                <span>{dayLabel(msg.created_at)}</span>
+              </div>
+            )}
+            <div className={className}>
+              {endsGroup ? (
+                <Link to={`/profile/${msg.user_id}`} className="messageAvatar">
+                  <img src={member?.avatar_url} alt={member?.name || "Avatar"} />
+                </Link>
+              ) : (
+                <span className="messageAvatar" aria-hidden="true" />
               )}
+              <div className="messageBubbleWrapper">
+                {startsGroup && !isOwn && (
+                  <span className="messageSender">{member?.name || "Former member"}</span>
+                )}
+                <div className="messageBubble" dangerouslySetInnerHTML={{ __html: msg.body }} />
+                {endsGroup && (
+                  <time
+                    className="messageTime"
+                    dateTime={msg.created_at}
+                    title={new Date(msg.created_at).toLocaleString()}
+                  >
+                    {formatTime(msg.created_at)}
+                  </time>
+                )}
+              </div>
             </div>
-          </div>
+          </React.Fragment>
         );
       })
     ) : messagesLoading ? (

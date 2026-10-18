@@ -565,6 +565,41 @@ describe("Conversation Component", () => {
     });
   });
 
+  it("groups consecutive messages and separates days", async () => {
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const at = (base, minutes) => new Date(base.getTime() + minutes * 60000).toISOString();
+    messagesResponse = {
+      has_more: false,
+      messages: [
+        { id: 1, body: "Old news", user_id: "2", created_at: at(yesterday, 0) },
+        { id: 2, body: "First", user_id: "2", created_at: at(now, -3) },
+        { id: 3, body: "Second", user_id: "2", created_at: at(now, -2) },
+        { id: 4, body: "Reply", user_id: "1", created_at: at(now, -1) },
+      ],
+    };
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    const separators = screen.getAllByRole("separator").map((el) => el.textContent);
+    expect(separators).toEqual(["Yesterday", "Today"]);
+    // Bob's name heads each of his groups (yesterday's and today's), not every message
+    expect(document.querySelectorAll(".messageSender")).toHaveLength(2);
+    expect(screen.getByText("First").closest(".messageContainer")).toHaveClass("groupStart");
+    expect(screen.getByText("Second").closest(".messageContainer")).not.toHaveClass("groupStart");
+    expect(screen.getByText("Second").closest(".messageContainer")).toHaveClass("groupEnd");
+  });
+
   it("shows a sent message in the conversation", async () => {
     api.post.mockResolvedValueOnce({
       message: { id: 3, body: "Fresh off the press", user_id: "1", conversation_id: "1" },
