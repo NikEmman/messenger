@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { AppContext } from "./components/AppContext";
 import { api } from "./api";
+import { connectInbox, disconnectInbox } from "./cable";
 
 export default function App() {
   const [user, setUser] = useState({});
@@ -16,6 +17,13 @@ export default function App() {
         }
       });
     }
+  }, [loggedInStatus]);
+
+  // Live updates: the socket authenticates with the session, so (re)open it on
+  // login and close it on logout.
+  useEffect(() => {
+    if (loggedInStatus === "LOGGED_IN") connectInbox();
+    else disconnectInbox();
   }, [loggedInStatus]);
 
   function handleSuccessfulLogOut() {

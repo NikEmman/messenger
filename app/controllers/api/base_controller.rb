@@ -45,7 +45,30 @@ module Api
     end
 
     def member_json(conversation_user)
-      user_json(conversation_user.user).merge(membership_id: conversation_user.id)
+      user_json(conversation_user.user).merge(
+        membership_id: conversation_user.id,
+        online: conversation_user.user.online?
+      )
+    end
+
+    def conversation_json(conversation, last_message: nil, unread_count: 0)
+      {
+        id: conversation.id,
+        topic: conversation.topic,
+        members: conversation.conversation_users.map { |cu| member_json(cu) },
+        last_message: last_message && {
+          id: last_message.id,
+          user_id: last_message.user_id,
+          preview: last_message.preview,
+          created_at: last_message.created_at
+        },
+        unread_count: unread_count
+      }
+    end
+
+    # Push a live event to members' inbox streams (see InboxChannel).
+    def broadcast_to_users(users, payload)
+      users.each { |user| InboxChannel.broadcast_to(user, payload) }
     end
 
     def message_json(message)

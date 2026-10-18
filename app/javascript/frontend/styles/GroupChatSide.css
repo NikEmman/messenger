@@ -290,3 +290,7 @@ aside {
 .newConv button:hover {
   background: var(--primary-dark);
 }
+
+.stackedAvatar.online {
+  box-shadow: 0 0 0 2px var(--success);
+}

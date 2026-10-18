@@ -11,4 +11,10 @@ class User < ApplicationRecord
   has_many :conversation_users, dependent: :destroy
   has_many :conversations, through: :conversation_users
   has_one :profile, dependent: :destroy
+
+  ONLINE_WINDOW = 70.seconds
+
+  def online?
+    last_seen_at.present? && last_seen_at > ONLINE_WINDOW.ago
+  end
 end

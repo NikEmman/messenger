@@ -1,10 +1,11 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { AppContext } from "./AppContext";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
 import Spinner from "./Spinner";
 import { Navigate } from "react-router-dom";
 import { api } from "../api";
+import { onInboxEvent } from "../cable";
 
 function htmlToText(html) {
   return new DOMParser().parseFromString(html || "", "text/html").body.textContent.trim();
@@ -18,6 +19,10 @@ export default function Messages() {
   const [formErrors, setFormErrors] = useState({});
   const { user, loggedInStatus } = useContext(AppContext);
   const [notification, setNotification] = useState("");
+  const [onlineUserIds, setOnlineUserIds] = useState(() => new Set());
+  // The open conversation, readable from socket callbacks without re-subscribing.
+  const openConversationId = useRef(null);
+  openConversationId.current = conversationId;
 
   // Auto-dismiss notifications after 4 seconds
   useEffect(() => {
@@ -40,11 +45,14 @@ export default function Messages() {
     setNotification(newNotification);
   };
 
-  // Refresh the sidebar preview and move the conversation to the top
+  // Refresh the sidebar preview, move the conversation to the top and count it
+  // as unread if it arrived somewhere the user isn't looking.
   const handleMessageSent = (message) => {
+    const isOpen = message.conversation_id === openConversationId.current;
+    const isOwn = message.user_id === user.id;
     setConversations((prev) => {
       const target = prev.find((c) => c.id === message.conversation_id);
-      if (!target) return prev;
+      if (!target || (target.last_message && target.last_message.id >= message.id)) return prev;
       const updated = {
         ...target,
         last_message: {
@@ -53,10 +61,67 @@ export default function Messages() {
           preview: htmlToText(message.body),
           created_at: message.created_at,
         },
+        unread_count: isOpen || isOwn ? 0 : (target.unread_count || 0) + 1,
       };
       return [updated, ...prev.filter((c) => c.id !== target.id)];
     });
+    if (isOpen && !isOwn) {
+      api.post(`/api/conversations/${message.conversation_id}/read`).catch(() => {});
+    }
   };
+
+  // Live updates pushed by the server over Action Cable
+  useEffect(
+    () =>
+      onInboxEvent((event) => {
+        switch (event.type) {
+          case "message":
+            handleMessageSent(event.message);
+            break;
+          case "presence":
+            setOnlineUserIds((prev) => {
+              const next = new Set(prev);
+              if (event.online) next.add(event.user_id);
+              else next.delete(event.user_id);
+              return next;
+            });
+            break;
+          case "conversation_added":
+            setConversations((prev) =>
+              prev.some((c) => c.id === event.conversation.id)
+                ? prev
+                : [event.conversation, ...prev]
+            );
+            break;
+          case "conversation_removed":
+            setConversations((prev) => prev.filter((c) => c.id !== event.conversation_id));
+            if (openConversationId.current === event.conversation_id) {
+              setConversationId(null);
+              setNotification("This conversation is no longer available");
+            }
+            break;
+          case "member_added":
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === event.conversation_id && !c.members.some((m) => m.id === event.member.id)
+                  ? { ...c, members: [...c.members, event.member] }
+                  : c
+              )
+            );
+            break;
+          case "member_removed":
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === event.conversation_id
+                  ? { ...c, members: c.members.filter((m) => m.id !== event.user_id) }
+                  : c
+              )
+            );
+            break;
+        }
+      }),
+    [user.id]
+  );
 
   const handleConversationDelete = (id) => {
     const newConversations = conversations.filter(
@@ -122,7 +187,14 @@ export default function Messages() {
   useEffect(() => {
     api
       .get("/api/conversations")
-      .then((data) => setConversations(data.conversations))
+      .then((data) => {
+        setConversations(data.conversations);
+        setOnlineUserIds(
+          new Set(
+            data.conversations.flatMap((c) => c.members.filter((m) => m.online).map((m) => m.id))
+          )
+        );
+      })
       .catch((error) => console.error("Error fetching conversations:", error))
       .finally(() => setConversationsLoading(false));
   }, []);
@@ -147,6 +219,7 @@ export default function Messages() {
         user={user}
         onClick={() => handleGroupChatSideClick(conversation.id)}
         isActive={conversation.id === conversationId}
+        onlineUserIds={onlineUserIds}
       />
     ));
 
@@ -171,6 +244,7 @@ export default function Messages() {
             handleMemberAdded={handleMemberAdded}
             handleMemberRemoved={handleMemberRemoved}
             handleConversationDeleted={handleConversationDelete}
+            onlineUserIds={onlineUserIds}
           />
         ) : (
           <h2>Select a conversation</h2>

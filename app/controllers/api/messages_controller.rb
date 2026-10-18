@@ -19,8 +19,10 @@ module Api
 
     def create
       message = @conversation.messages.create!(user: @current_user, body: params.require(:message).require(:body))
+      payload = message_json(message)
 
-      render json: { message: message_json(message) }, status: :created
+      broadcast_to_users(@conversation.users, type: "message", message: payload)
+      render json: { message: payload }, status: :created
     end
 
     private

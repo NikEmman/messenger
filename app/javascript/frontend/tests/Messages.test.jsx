@@ -11,8 +11,10 @@ import "@testing-library/jest-dom";
 import Messages from "../components/Messages";
 import { AppContext } from "../components/AppContext";
 import { api } from "../api";
+import { emit } from "../cable";
 
 jest.mock("../api");
+jest.mock("../cable");
 
 // Helper function to render Messages with required providers
 const renderMessages = (contextValue) => {
@@ -94,6 +96,44 @@ describe("Messages Component", () => {
         screen.getByText("Conversation deleted successfully")
       ).toBeInTheDocument();
     });
+  });
+
+  it("applies live updates from the socket", async () => {
+    const mockConversations = [
+      {
+        id: 1,
+        topic: "Project Discussion",
+        members: [{ id: "2", name: "Bob" }],
+        last_message: null,
+        unread_count: 0,
+      },
+    ];
+    api.get.mockResolvedValueOnce({ conversations: mockConversations });
+    api.post.mockResolvedValue(null);
+
+    await act(async () => {
+      renderMessages(defaultContextValue);
+    });
+
+    act(() =>
+      emit({
+        type: "message",
+        message: { id: 5, body: "<p>Ping</p>", user_id: "2", conversation_id: 1 },
+      })
+    );
+    expect(screen.getByText("Bob: Ping")).toBeInTheDocument();
+    expect(screen.getByLabelText("1 unread")).toBeInTheDocument();
+
+    act(() =>
+      emit({
+        type: "conversation_added",
+        conversation: { id: 2, topic: "Surprise party", members: [], last_message: null },
+      })
+    );
+    expect(screen.getByText("Surprise party")).toBeInTheDocument();
+
+    act(() => emit({ type: "conversation_removed", conversation_id: 1 }));
+    expect(screen.queryByText("Project Discussion")).not.toBeInTheDocument();
   });
 
   it("redirects to home when not logged in", async () => {

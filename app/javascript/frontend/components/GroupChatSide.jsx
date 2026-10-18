@@ -18,7 +18,14 @@ function formatPreviewTime(timestamp) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-export default function GroupChatSide({ onDeleteClick, conversation, user, onClick, isActive }) {
+export default function GroupChatSide({
+  onDeleteClick,
+  conversation,
+  user,
+  onClick,
+  isActive,
+  onlineUserIds = new Set(),
+}) {
   const otherMembers = conversation.members.filter((m) => m.id !== user.id);
   const maxVisibleAvatars = 5;
   const visibleMembers = otherMembers.slice(0, maxVisibleAvatars);
@@ -44,7 +51,7 @@ export default function GroupChatSide({ onDeleteClick, conversation, user, onCli
                 width="22px"
                 src={member.avatar_url}
                 alt={member.name || member.email}
-                className="stackedAvatar"
+                className={`stackedAvatar${onlineUserIds.has(member.id) ? " online" : ""}`}
                 style={{ zIndex: visibleMembers.length - index }}
               />
             ))}

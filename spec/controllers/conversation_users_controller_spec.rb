@@ -18,6 +18,19 @@ RSpec.describe Api::ConversationUsersController, type: :request do
       expect(json_response['member']).not_to have_key('password_digest')
     end
 
+    it 'pushes the conversation to the added user and the new member to others' do
+      third = create(:user)
+      create(:conversation_user, user: user, conversation: conversation)
+      create(:conversation_user, user: third, conversation: conversation)
+
+      expect {
+        post '/api/conversation_users', params: { conversation_id: conversation.id, user_id: other_user.id }
+      }.to have_broadcasted_to(InboxChannel.broadcasting_for(other_user))
+        .with(a_hash_including(type: "conversation_added"))
+        .and have_broadcasted_to(InboxChannel.broadcasting_for(third))
+        .with(a_hash_including(type: "member_added", conversation_id: conversation.id))
+    end
+
     it 'rejects adding someone who is already a member' do
       create(:conversation_user, user: user, conversation: conversation)
       create(:conversation_user, user: other_user, conversation: conversation)
@@ -46,6 +59,16 @@ RSpec.describe Api::ConversationUsersController, type: :request do
         expect(response).to have_http_status(:ok)
         expect(json_response).to eq('conversation_deleted' => false, 'removed_user_id' => other_user.id)
         expect(ConversationUser.exists?(membership.id)).to be false
+      end
+
+      it 'tells the removed user to drop the conversation' do
+        create(:conversation_user, user: user, conversation: conversation)
+        membership = create(:conversation_user, user: other_user, conversation: conversation)
+
+        expect {
+          delete "/api/conversation_users/#{membership.id}"
+        }.to have_broadcasted_to(InboxChannel.broadcasting_for(other_user))
+          .with(type: "conversation_removed", conversation_id: conversation.id)
       end
 
       it 'deletes the conversation when last user is removed' do

@@ -11,11 +11,13 @@ import "@testing-library/jest-dom";
 import Conversation from "../components/Conversation";
 import { AppContext } from "../components/AppContext";
 import { api } from "../api";
+import { emit, sendTyping } from "../cable";
 
 // Use the __mocks__/react-quill.jsx stub so we can interact with the editor
 jest.mock("react-quill");
 
 jest.mock("../api");
+jest.mock("../cable");
 
 // Mock dialog showModal and close methods for JSDOM
 const mockDialog = {
@@ -612,6 +614,78 @@ describe("Conversation Component", () => {
     expect(await screen.findByText("The very first message")).toBeInTheDocument();
     expect(api.get).toHaveBeenCalledWith("/api/conversations/1/messages?before=1");
     expect(screen.queryByRole("button", { name: "Load earlier messages" })).not.toBeInTheDocument();
+  });
+
+  it("appends messages pushed over the socket", async () => {
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    act(() => {
+      emit({
+        type: "message",
+        message: { id: 7, body: "Live from Metropolis", user_id: "2", conversation_id: "1" },
+      });
+      // A duplicate delivery must not render twice
+      emit({
+        type: "message",
+        message: { id: 7, body: "Live from Metropolis", user_id: "2", conversation_id: "1" },
+      });
+      emit({
+        type: "message",
+        message: { id: 8, body: "Other conversation", user_id: "2", conversation_id: "99" },
+      });
+    });
+
+    expect(screen.getAllByText("Live from Metropolis")).toHaveLength(1);
+    expect(screen.queryByText("Other conversation")).not.toBeInTheDocument();
+  });
+
+  it("shows who is typing and sends throttled typing pings", async () => {
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    act(() => emit({ type: "typing", conversation_id: "1", user_id: "2" }));
+    expect(screen.getByText("Bob is typing…")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByTestId("quill-editor"), { target: { value: "H" } });
+    fireEvent.change(screen.getByTestId("quill-editor"), { target: { value: "Hi" } });
+    expect(sendTyping).toHaveBeenCalledTimes(1);
+    expect(sendTyping).toHaveBeenCalledWith("1");
+  });
+
+  it("shows presence dots for online members", async () => {
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+        onlineUserIds: new Set(["2"]),
+      });
+    });
+
+    expect(screen.getAllByLabelText("online").length).toBeGreaterThan(0);
   });
 
   it("shows error notification when send message fails", async () => {

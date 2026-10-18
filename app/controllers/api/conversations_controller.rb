@@ -35,7 +35,11 @@ module Api
     end
 
     def destroy
-      find_conversation.destroy!
+      conversation = find_conversation
+      others = conversation.users.where.not(id: @current_user.id).to_a
+      conversation.destroy!
+
+      broadcast_to_users(others, type: "conversation_removed", conversation_id: conversation.id)
       head :no_content
     end
 
@@ -53,21 +57,6 @@ module Api
 
     def conversation_params
       params.require(:conversation).permit(:topic)
-    end
-
-    def conversation_json(conversation, last_message: nil, unread_count: 0)
-      {
-        id: conversation.id,
-        topic: conversation.topic,
-        members: conversation.conversation_users.map { |cu| member_json(cu) },
-        last_message: last_message && {
-          id: last_message.id,
-          user_id: last_message.user_id,
-          preview: last_message.preview,
-          created_at: last_message.created_at
-        },
-        unread_count: unread_count
-      }
     end
   end
 end

@@ -518,3 +518,24 @@
     max-width: 80%;
   }
 }
+
+/* ─── Presence & typing ───────────────────────────────────────────────── */
+.presenceDot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.3rem;
+  border-radius: 50%;
+  background: var(--success);
+  vertical-align: middle;
+}
+
+.typingIndicator {
+  min-height: 1.25rem;
+  margin: 0;
+  padding: 0 1.25rem;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+}

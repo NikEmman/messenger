@@ -50,6 +50,16 @@ RSpec.describe 'Api::Messages', type: :request do
           expect(json_response['message']['body']).to include('Hi')
         end
 
+        it 'broadcasts the message to every member' do
+          friend = create(:user)
+          create(:conversation_user, user: friend, conversation: conversation)
+
+          expect {
+            post messages_path, params: { message: { body: 'Hi' } }
+          }.to have_broadcasted_to(InboxChannel.broadcasting_for(friend))
+            .with(a_hash_including(type: "message"))
+        end
+
         it 'ignores a spoofed user_id' do
           post messages_path, params: { message: { body: 'Hi', user_id: other_user.id } }
 

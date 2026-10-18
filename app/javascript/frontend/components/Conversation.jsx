@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import { api } from "../api";
 import Spinner from "./Spinner";
+import { onInboxEvent, sendTyping } from "../cable";
 
 function formatTime(timestamp) {
   if (!timestamp) return "";
@@ -23,6 +24,13 @@ function formatTime(timestamp) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+const TYPING_THROTTLE_MS = 2000;
+const TYPING_TIMEOUT_MS = 4000;
+
+function appendUnique(messages, message) {
+  return messages.some((m) => m.id === message.id) ? messages : [...messages, message];
+}
+
 function isEditorEmpty(html) {
   return html.replace(/<[^>]*>/g, "").trim() === "";
 }
@@ -35,6 +43,7 @@ export default function Conversation({
   handleMemberAdded,
   handleMemberRemoved,
   handleConversationDeleted,
+  onlineUserIds = new Set(),
 }) {
   const [message, setMessage] = useState("");
   const [showUserList, setShowUserList] = useState(false);
@@ -53,6 +62,34 @@ export default function Conversation({
   const scrollAnchor = useRef(null);
   // Whether the view should follow new messages (true while near the bottom).
   const stickToBottom = useRef(true);
+  // { userId: timeoutId } for members currently typing
+  const [typingUsers, setTypingUsers] = useState({});
+  const lastTypingSent = useRef(0);
+
+  const stopTyping = (userId) =>
+    setTypingUsers((prev) => {
+      if (!(userId in prev)) return prev;
+      clearTimeout(prev[userId]);
+      const { [userId]: _, ...rest } = prev;
+      return rest;
+    });
+
+  // Live messages and typing indicators for this conversation
+  useEffect(() => {
+    setTypingUsers({});
+    return onInboxEvent((event) => {
+      if (event.type === "message" && event.message.conversation_id === conversation.id) {
+        stopTyping(event.message.user_id);
+        setMessages((prev) => appendUnique(prev, event.message));
+      } else if (event.type === "typing" && event.conversation_id === conversation.id) {
+        setTypingUsers((prev) => {
+          clearTimeout(prev[event.user_id]);
+          const timeout = setTimeout(() => stopTyping(event.user_id), TYPING_TIMEOUT_MS);
+          return { ...prev, [event.user_id]: timeout };
+        });
+      }
+    });
+  }, [conversation.id]);
 
   // Load the newest page of messages whenever the conversation changes
   useEffect(() => {
@@ -150,10 +187,34 @@ export default function Conversation({
   const handleMessageChange = (content) => {
     handleNotificationChange("");
     setMessage(content);
+    const now = Date.now();
+    if (!isEditorEmpty(content) && now - lastTypingSent.current > TYPING_THROTTLE_MS) {
+      lastTypingSent.current = now;
+      sendTyping(conversation.id);
+    }
   };
 
+  const typingNames = Object.keys(typingUsers)
+    .map((id) => conversation.members.find((m) => String(m.id) === id))
+    .filter(Boolean)
+    .map((m) => m.name || m.email);
+  const typingText =
+    typingNames.length === 0
+      ? ""
+      : typingNames.length === 1
+        ? `${typingNames[0]} is typing…`
+        : `${typingNames.join(", ")} are typing…`;
+
+  const presenceDot = (member) =>
+    onlineUserIds.has(member.id) && (
+      <span className="presenceDot" title="Online" aria-label="online" />
+    );
+
   const participants = conversation.members.map((member) => (
-    <span key={member.id}>{member.name || member.email}</span>
+    <span key={member.id}>
+      {presenceDot(member)}
+      {member.name || member.email}
+    </span>
   ));
 
   const onAddUserClick = () => {
@@ -178,7 +239,7 @@ export default function Conversation({
       })
       .then((data) => {
         stickToBottom.current = true;
-        setMessages((prev) => [...prev, data.message]);
+        setMessages((prev) => appendUnique(prev, data.message));
         handleNotificationChange("Message successfully sent.");
         handleMessageSent(data.message);
       })
@@ -323,6 +384,7 @@ export default function Conversation({
                     className="memberAvatar"
                   />
                   <span className="memberName">
+                    {presenceDot(member)}
                     {member.name || member.email}
                     {member.id === user.id && " (you)"}
                   </span>
@@ -371,6 +433,10 @@ export default function Conversation({
         {messageList}
         <div ref={messagesEndRef} />
       </div>
+
+      <p className="typingIndicator" aria-live="polite">
+        {typingText}
+      </p>
 
       <div className="messageInputArea" onKeyDown={handleKeyDown}>
         <ReactQuill value={message} onChange={handleMessageChange} />
