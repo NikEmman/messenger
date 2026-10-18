@@ -584,3 +584,20 @@ a.messageAvatar:hover {
   color: var(--text-secondary);
   background: var(--bg-subtle);
 }
+
+/* ─── Optimistic sending ─────────────────────────────────────────────── */
+.messageBubble.pending {
+  opacity: 0.6;
+}
+
+.messageBubble.failed {
+  opacity: 0.6;
+  outline: 2px solid var(--danger);
+  outline-offset: 1px;
+}
+
+.messageFailed {
+  font-size: 0.7rem;
+  color: var(--danger);
+  padding: 0 0.25rem;
+}

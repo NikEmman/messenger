@@ -71,6 +71,12 @@ RSpec.describe 'Api::Messages', type: :request do
           expect(json_response['messages'].last['body']).not_to include('onerror')
         end
 
+        it 'echoes the client_id used for optimistic rendering' do
+          post messages_path, params: { message: { body: 'Hi', client_id: 'tmp-123' } }
+
+          expect(json_response['message']['client_id']).to eq('tmp-123')
+        end
+
         it 'ignores a spoofed user_id' do
           post messages_path, params: { message: { body: 'Hi', user_id: other_user.id } }
 

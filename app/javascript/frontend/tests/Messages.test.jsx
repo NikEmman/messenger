@@ -60,7 +60,7 @@ describe("Messages Component", () => {
       renderMessages(defaultContextValue);
     });
 
-    expect(screen.getByText("No conversations available")).toBeInTheDocument();
+    expect(screen.getByText("No conversations yet. Start one below!")).toBeInTheDocument();
   });
 
   it("shows the select conversation message when no conversation is selected", async () => {

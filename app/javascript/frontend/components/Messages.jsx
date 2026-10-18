@@ -20,7 +20,8 @@ export default function Messages() {
   const [topic, setTopic] = useState("");
   const [formErrors, setFormErrors] = useState({});
   const { user, loggedInStatus } = useContext(AppContext);
-  const [notification, setNotification] = useState("");
+  // { text, kind: "info" | "error" } shown as a toast
+  const [notification, setNotification] = useState(null);
   const [onlineUserIds, setOnlineUserIds] = useState(() => new Set());
   // The open conversation, readable from socket callbacks without re-subscribing.
   const openConversationId = useRef(null);
@@ -29,7 +30,7 @@ export default function Messages() {
   // Auto-dismiss notifications after 4 seconds
   useEffect(() => {
     if (!notification) return;
-    const timer = setTimeout(() => setNotification(""), 4000);
+    const timer = setTimeout(() => setNotification(null), 4000);
     return () => clearTimeout(timer);
   }, [notification]);
 
@@ -37,15 +38,14 @@ export default function Messages() {
     setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, ...changes } : c)));
 
   const handleGroupChatSideClick = (id) => {
-    setNotification("");
+    notify(null);
     setConversationId(id);
     updateConversation(id, { unread_count: 0 });
     api.post(`/api/conversations/${id}/read`).catch(() => {});
   };
 
-  const handleNotificationChange = (newNotification) => {
-    setNotification(newNotification);
-  };
+  const notify = (text, kind = "info") => setNotification(text ? { text, kind } : null);
+  const handleNotificationChange = notify;
 
   // Refresh the sidebar preview, move the conversation to the top and count it
   // as unread if it arrived somewhere the user isn't looking.
@@ -99,7 +99,7 @@ export default function Messages() {
             setConversations((prev) => prev.filter((c) => c.id !== event.conversation_id));
             if (openConversationId.current === event.conversation_id) {
               setConversationId(null);
-              setNotification("This conversation is no longer available");
+              notify("This conversation is no longer available");
             }
             break;
           case "member_added":
@@ -182,7 +182,7 @@ export default function Messages() {
           setTopic("");
           setFormErrors({});
         })
-        .catch(() => setNotification("Failed to create conversation"));
+        .catch(() => notify("Failed to create conversation", "error"));
     }
   };
 
@@ -205,10 +205,10 @@ export default function Messages() {
     api
       .delete(`/api/conversations/${id}`)
       .then(() => {
-        setNotification("Conversation deleted successfully");
+        notify("Conversation deleted successfully");
         handleConversationDelete(id);
       })
-      .catch(() => setNotification("Failed to delete conversation"));
+      .catch(() => notify("Failed to delete conversation", "error"));
   };
 
   const conversationsList =
@@ -236,7 +236,14 @@ export default function Messages() {
   return (
     <div className="mainContainer">
       <main>
-        {notification && <p className="notification">{notification}</p>}
+        {notification && (
+          <div className={`toast ${notification.kind}`} role="status">
+            <span>{notification.text}</span>
+            <button className="toastClose" onClick={() => notify(null)} aria-label="Dismiss">
+              ✕
+            </button>
+          </div>
+        )}
         {selectedConversation ? (
           <Conversation
             handleNotificationChange={handleNotificationChange}
@@ -249,7 +256,15 @@ export default function Messages() {
             onlineUserIds={onlineUserIds}
           />
         ) : (
-          <h2>Select a conversation</h2>
+          <div className="emptyState">
+            <div className="emptyStateIcon" aria-hidden="true">💬</div>
+            <h2>Select a conversation</h2>
+            <p>
+              {conversations.length > 0
+                ? "Pick a conversation on the left to start chatting."
+                : "Start a new conversation from the sidebar, then add people to it."}
+            </p>
+          </div>
         )}
       </main>
       <aside>
@@ -257,7 +272,7 @@ export default function Messages() {
           {conversationsLoading ? (
             <Spinner label="Loading conversations..." className="sidebarSpinner" />
           ) : (
-            conversationsList || <p>No conversations available</p>
+            conversationsList || <p>No conversations yet. Start one below!</p>
           )}
         </div>
         <div className="newConv">
@@ -266,7 +281,7 @@ export default function Messages() {
             value={topic}
             onChange={(e) => {
               setTopic(e.target.value);
-              setNotification("");
+              notify(null);
               setFormErrors({});
             }}
             placeholder="Conversation Topic"

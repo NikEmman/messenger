@@ -18,8 +18,10 @@ module Api
     end
 
     def create
-      message = @conversation.messages.create!(user: @current_user, body: params.require(:message).require(:body))
-      payload = message_json(message)
+      message_params = params.require(:message).permit(:body, :client_id)
+      message = @conversation.messages.create!(user: @current_user, body: message_params[:body])
+      # Echo the sender's temporary id so their optimistic copy can be replaced.
+      payload = message_json(message).merge(client_id: message_params[:client_id].presence)
 
       broadcast_to_users(@conversation.users, type: "message", message: payload)
       render json: { message: payload }, status: :created

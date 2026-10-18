@@ -552,10 +552,9 @@ describe("Conversation Component", () => {
     await waitFor(() => {
       // Verify API call
       expect(api.post).toHaveBeenCalledWith("/api/conversations/1/messages", {
-        message: { body: "Hello!" },
+        message: { body: "Hello!", client_id: expect.any(String) },
       });
       // Verify callback
-      expect(mockHandleNotificationChange).toHaveBeenCalledWith("Message successfully sent.");
       expect(mockHandleMessageSent).toHaveBeenCalledWith({
         id: "3",
         body: "Test message",
@@ -746,14 +745,20 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith("/api/conversations/1/messages", {
-        message: { body: "Sent with enter" },
+        message: { body: "Sent with enter", client_id: expect.any(String) },
       });
     });
   });
 
-  it("shows error notification when send message fails", async () => {
-    // Mock the API response to throw an error
-    api.post.mockRejectedValueOnce(new Error("Network error"));
+  it("shows a failed message with retry when sending fails", async () => {
+    api.post
+      .mockRejectedValueOnce(new Error("Network error"))
+      // Like the server, echo the client_id so the optimistic copy is replaced
+      .mockImplementationOnce((path, body) =>
+        Promise.resolve({
+          message: { id: 3, body: "Hello!", user_id: "1", conversation_id: "1", client_id: body.message.client_id },
+        })
+      );
 
     await act(async () => {
       renderConversation(defaultContextValue, {
@@ -773,9 +778,49 @@ describe("Conversation Component", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /send/i }));
 
+    // Shown immediately, before the server answers
+    expect(screen.getByText("Hello!")).toBeInTheDocument();
+
     await waitFor(() => {
-      expect(mockHandleNotificationChange).toHaveBeenCalledWith("Failed to send message");
+      expect(mockHandleNotificationChange).toHaveBeenCalledWith("Failed to send message", "error");
     });
+    expect(screen.getByText(/Not sent/)).toBeInTheDocument();
+
+    const clientId = api.post.mock.calls[0][1].message.client_id;
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => expect(screen.queryByText(/Not sent/)).not.toBeInTheDocument());
+    expect(api.post.mock.calls[1][1].message.client_id).toBe(clientId);
+    expect(screen.getAllByText("Hello!")).toHaveLength(1);
+  });
+
+  it("replaces the optimistic copy when the broadcast arrives first", async () => {
+    let resolvePost;
+    api.post.mockImplementationOnce(() => new Promise((resolve) => (resolvePost = resolve)));
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    fireEvent.change(screen.getByTestId("message-editor"), { target: { value: "Race me" } });
+    fireEvent.click(screen.getByRole("button", { name: /send/i }));
+    expect(screen.getByText("Sending…")).toBeInTheDocument();
+
+    const clientId = api.post.mock.calls[0][1].message.client_id;
+    const confirmed = { id: 9, body: "Race me", user_id: "1", conversation_id: "1", client_id: clientId };
+    act(() => emit({ type: "message", message: confirmed }));
+    await act(async () => resolvePost({ message: confirmed }));
+
+    expect(screen.getAllByText("Race me")).toHaveLength(1);
+    expect(screen.queryByText("Sending…")).not.toBeInTheDocument();
   });
 
   it("shows removing/loading state when removing a member", async () => {

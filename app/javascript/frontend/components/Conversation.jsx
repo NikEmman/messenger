@@ -43,9 +43,16 @@ function isSameGroup(a, b) {
 const TYPING_THROTTLE_MS = 2000;
 const TYPING_TIMEOUT_MS = 4000;
 
-function appendUnique(messages, message) {
+// Add a server message, replacing the optimistic copy it confirms (matched by
+// client_id) and ignoring duplicates (the POST response and broadcast race).
+function mergeMessage(messages, message) {
+  if (message.client_id && messages.some((m) => m.client_id === message.client_id)) {
+    return messages.map((m) => (m.client_id === message.client_id ? message : m));
+  }
   return messages.some((m) => m.id === message.id) ? messages : [...messages, message];
 }
+
+const newClientId = () => `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 function isEditorEmpty(html) {
   return html.replace(/<[^>]*>/g, "").trim() === "";
@@ -96,7 +103,7 @@ export default function Conversation({
     return onInboxEvent((event) => {
       if (event.type === "message" && event.message.conversation_id === conversation.id) {
         stopTyping(event.message.user_id);
-        setMessages((prev) => appendUnique(prev, event.message));
+        setMessages((prev) => mergeMessage(prev, event.message));
       } else if (event.type === "typing" && event.conversation_id === conversation.id) {
         setTypingUsers((prev) => {
           clearTimeout(prev[event.user_id]);
@@ -121,7 +128,7 @@ export default function Conversation({
         setMessages(data.messages);
         setHasMore(data.has_more);
       })
-      .catch(() => !cancelled && handleNotificationChange("Failed to load messages"))
+      .catch(() => !cancelled && handleNotificationChange("Failed to load messages", "error"))
       .finally(() => !cancelled && setMessagesLoading(false));
     return () => {
       cancelled = true;
@@ -150,7 +157,7 @@ export default function Conversation({
         setMessages((prev) => [...data.messages, ...prev]);
         setHasMore(data.has_more);
       })
-      .catch(() => handleNotificationChange("Failed to load older messages"))
+      .catch(() => handleNotificationChange("Failed to load older messages", "error"))
       .finally(() => setLoadingOlder(false));
   };
 
@@ -168,7 +175,7 @@ export default function Conversation({
       api
         .get(`/api/users${query ? `?q=${encodeURIComponent(query)}` : ""}`)
         .then((data) => setUserList(data.users))
-        .catch(() => handleNotificationChange("Failed to load users"));
+        .catch(() => handleNotificationChange("Failed to load users", "error"));
     }, 250);
     return () => clearTimeout(timer);
   }, [searchText, showUserList]);
@@ -193,7 +200,7 @@ export default function Conversation({
           .join(" ");
 
         return (
-          <React.Fragment key={msg.id}>
+          <React.Fragment key={msg.client_id || msg.id}>
             {startsDay && (
               <div className="daySeparator" role="separator">
                 <span>{dayLabel(msg.created_at)}</span>
@@ -211,8 +218,24 @@ export default function Conversation({
                 {startsGroup && !isOwn && (
                   <span className="messageSender">{member?.name || "Former member"}</span>
                 )}
-                <div className="messageBubble" dangerouslySetInnerHTML={{ __html: msg.body }} />
-                {endsGroup && (
+                <div
+                  className={`messageBubble${msg.status ? ` ${msg.status}` : ""}`}
+                  dangerouslySetInnerHTML={{ __html: msg.body }}
+                />
+                {msg.status === "failed" ? (
+                  <span className="messageFailed">
+                    Not sent ·{" "}
+                    <button className="linkBtn" onClick={() => retryMessage(msg)}>
+                      Retry
+                    </button>{" "}
+                    ·{" "}
+                    <button className="linkBtn" onClick={() => discardMessage(msg)}>
+                      Remove
+                    </button>
+                  </span>
+                ) : msg.status === "pending" ? (
+                  <span className="messageTime">Sending…</span>
+                ) : endsGroup && (
                   <time
                     className="messageTime"
                     dateTime={msg.created_at}
@@ -278,23 +301,49 @@ export default function Conversation({
     dialogRef.current?.close();
   };
 
-  const sendMessage = (html = message) => {
-    if (isEditorEmpty(html)) return;
+  const setMessageStatus = (clientId, status) =>
+    setMessages((prev) => prev.map((m) => (m.client_id === clientId ? { ...m, status } : m)));
 
+  const deliver = (pending) => {
     api
       .post(`/api/conversations/${conversation.id}/messages`, {
-        message: { body: html },
+        message: { body: pending.body, client_id: pending.client_id },
       })
       .then((data) => {
-        stickToBottom.current = true;
-        setMessages((prev) => appendUnique(prev, data.message));
-        handleNotificationChange("Message successfully sent.");
+        setMessages((prev) => mergeMessage(prev, data.message));
         handleMessageSent(data.message);
       })
-      .catch(() => handleNotificationChange("Failed to send message"));
-
-    setMessage("");
+      .catch(() => {
+        setMessageStatus(pending.client_id, "failed");
+        handleNotificationChange("Failed to send message", "error");
+      });
   };
+
+  // Show the message immediately; the server's copy replaces it on success.
+  const sendMessage = (html = message) => {
+    if (isEditorEmpty(html)) return;
+    const pending = {
+      id: null,
+      client_id: newClientId(),
+      body: html,
+      user_id: user.id,
+      conversation_id: conversation.id,
+      created_at: new Date().toISOString(),
+      status: "pending",
+    };
+    stickToBottom.current = true;
+    setMessages((prev) => [...prev, pending]);
+    setMessage("");
+    deliver(pending);
+  };
+
+  const retryMessage = (msg) => {
+    setMessageStatus(msg.client_id, "pending");
+    deliver(msg);
+  };
+
+  const discardMessage = (msg) =>
+    setMessages((prev) => prev.filter((m) => m.client_id !== msg.client_id));
 
   const onSearchChange = (e) => setSearchText(e.target.value);
 
@@ -321,7 +370,7 @@ export default function Conversation({
         setUserList(userList.filter((u) => u.id !== selection));
         setShowUserList(false);
       })
-      .catch(() => handleNotificationChange("Failed to add member"));
+      .catch(() => handleNotificationChange("Failed to add member", "error"));
   };
 
   const handleRemoveMember = (membershipId, memberName) => {
@@ -340,7 +389,7 @@ export default function Conversation({
           handleMemberRemoved(data.removed_user_id);
         }
       })
-      .catch(() => handleNotificationChange("Failed to remove member"))
+      .catch(() => handleNotificationChange("Failed to remove member", "error"))
       .finally(() => setRemovingId(null));
   };
 
@@ -360,7 +409,7 @@ export default function Conversation({
         handleConversationDeleted(conversation.id);
         closeMembersModal();
       })
-      .catch(() => handleNotificationChange("Failed to leave conversation"))
+      .catch(() => handleNotificationChange("Failed to leave conversation", "error"))
       .finally(() => setRemovingId(null));
   };
 
