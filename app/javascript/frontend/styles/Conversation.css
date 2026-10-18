@@ -23,6 +23,9 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .members {
@@ -49,6 +52,25 @@
   flex-wrap: wrap;
   align-items: center;
   margin-top: 0.25rem;
+}
+
+.conversationTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Only shown on phones, where the chat replaces the conversation list */
+.conversationHeader .backBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 1.75rem;
+  line-height: 1;
+  padding: 0 0.25rem 0.125rem 0;
+  cursor: pointer;
 }
 
 .conversationHeader .smallBtn {
@@ -600,4 +622,35 @@ a.messageAvatar:hover {
   font-size: 0.7rem;
   color: var(--danger);
   padding: 0 0.25rem;
+}
+
+/* ─── Phones ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .conversationHeader .backBtn {
+    display: block;
+  }
+
+  .conversationHeader {
+    padding: 0.625rem 0.875rem;
+  }
+
+  .messages {
+    padding: 0.75rem;
+  }
+
+  .messageInputArea {
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  .sendHint {
+    display: none;
+  }
+
+  .messageInputFooter {
+    justify-content: flex-end;
+  }
+
+  .messageBubbleWrapper {
+    max-width: 80%;
+  }
 }

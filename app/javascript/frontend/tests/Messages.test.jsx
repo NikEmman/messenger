@@ -136,6 +136,31 @@ describe("Messages Component", () => {
     expect(screen.queryByText("Project Discussion")).not.toBeInTheDocument();
   });
 
+  it("switches between the list and the chat screen", async () => {
+    api.get
+      .mockResolvedValueOnce({
+        conversations: [
+          { id: 1, topic: "Project Discussion", members: [], last_message: null, unread_count: 0 },
+        ],
+      })
+      .mockResolvedValue({ messages: [], has_more: false });
+    api.post.mockResolvedValue(null);
+
+    let container;
+    await act(async () => {
+      ({ container } = renderMessages(defaultContextValue));
+    });
+    expect(container.querySelector(".mainContainer")).toHaveClass("showingList");
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Project Discussion"));
+    });
+    expect(container.querySelector(".mainContainer")).toHaveClass("showingChat");
+
+    fireEvent.click(screen.getByRole("button", { name: "Back to conversations" }));
+    expect(container.querySelector(".mainContainer")).toHaveClass("showingList");
+  });
+
   it("redirects to home when not logged in", async () => {
     const notLoggedInContext = {
       ...defaultContextValue,

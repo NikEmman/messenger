@@ -67,6 +67,7 @@ export default function Conversation({
   handleMemberRemoved,
   handleConversationDeleted,
   onlineUserIds = new Set(),
+  onBack,
 }) {
   const [message, setMessage] = useState("");
   const [showUserList, setShowUserList] = useState(false);
@@ -444,7 +445,14 @@ export default function Conversation({
   return (
     <div className="conversation">
       <div className="conversationHeader">
-        <p className="topic">{conversation.topic}</p>
+        <div className="conversationTitleRow">
+          {onBack && (
+            <button className="backBtn" onClick={onBack} aria-label="Back to conversations">
+              ‹
+            </button>
+          )}
+          <p className="topic">{conversation.topic}</p>
+        </div>
         <p className="members">{participants}</p>
         {showUserList ? (
           userSelection

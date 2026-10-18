@@ -234,7 +234,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="mainContainer">
+    <div className={`mainContainer ${selectedConversation ? "showingChat" : "showingList"}`}>
       <main>
         {notification && (
           <div className={`toast ${notification.kind}`} role="status">
@@ -254,6 +254,7 @@ export default function Messages() {
             handleMemberRemoved={handleMemberRemoved}
             handleConversationDeleted={handleConversationDelete}
             onlineUserIds={onlineUserIds}
+            onBack={() => setConversationId(null)}
           />
         ) : (
           <div className="emptyState">

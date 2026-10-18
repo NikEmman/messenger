@@ -71,6 +71,7 @@ body {
 .mainContainer {
   display: flex;
   height: calc(100vh - var(--nav-height));
+  height: calc(100dvh - var(--nav-height));
   overflow: hidden;
 }
 
@@ -277,15 +278,22 @@ textarea:focus-visible {
 }
 
 /* ─── Responsive ─────────────────────────────────────────────────────── */
+/* Phones: the conversation list and the open chat are separate screens */
 @media (max-width: 768px) {
-  .mainContainer {
-    flex-direction: column;
-    height: auto;
-    overflow: visible;
+  :root {
+    --nav-height: 52px;
   }
 
   aside {
-    order: 0;
-    width: 100% !important;
+    width: 100%;
+  }
+
+  main {
+    border-left: none;
+  }
+
+  .mainContainer.showingList main,
+  .mainContainer.showingChat aside {
+    display: none;
   }
 }
