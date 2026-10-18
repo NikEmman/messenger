@@ -390,9 +390,17 @@ a.messageAvatar:hover {
   color: var(--text-muted);
 }
 
+/* Trix draws its icons as dark SVGs in ::before; invert just the icons */
 [data-theme="dark"] .messageEditor trix-toolbar .trix-button {
-  background: var(--bg-subtle);
-  filter: invert(0.85);
+  background: transparent;
+}
+
+[data-theme="dark"] .messageEditor trix-toolbar .trix-button.trix-active {
+  background: var(--bg-muted);
+}
+
+[data-theme="dark"] .messageEditor trix-toolbar .trix-button--icon::before {
+  filter: invert(0.9);
 }
 
 /* ─── Members modal ──────────────────────────────────────────────────── */
