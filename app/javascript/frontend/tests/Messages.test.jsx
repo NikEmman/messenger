@@ -118,10 +118,10 @@ describe("Messages Component", () => {
     act(() =>
       emit({
         type: "message",
-        message: { id: 5, body: "<p>Ping</p>", user_id: "2", conversation_id: 1 },
+        message: { id: 5, body: "<div>Ping<br>pong</div>", user_id: "2", conversation_id: 1 },
       })
     );
-    expect(screen.getByText("Bob: Ping")).toBeInTheDocument();
+    expect(screen.getByText("Bob: Ping pong")).toBeInTheDocument();
     expect(screen.getByLabelText("1 unread")).toBeInTheDocument();
 
     act(() =>

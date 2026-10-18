@@ -13,8 +13,8 @@ import { AppContext } from "../components/AppContext";
 import { api } from "../api";
 import { emit, sendTyping } from "../cable";
 
-// Use the __mocks__/react-quill.jsx stub so we can interact with the editor
-jest.mock("react-quill");
+// jsdom has no <trix-editor>; use the textarea stand-in from __mocks__
+jest.mock("../components/MessageEditor");
 
 jest.mock("../api");
 jest.mock("../cable");
@@ -544,7 +544,7 @@ describe("Conversation Component", () => {
     });
 
     // Type a message then send
-    fireEvent.change(screen.getByTestId("quill-editor"), {
+    fireEvent.change(screen.getByTestId("message-editor"), {
       target: { value: "Hello!" },
     });
     fireEvent.click(screen.getByRole("button", { name: /send/i }));
@@ -582,7 +582,7 @@ describe("Conversation Component", () => {
       });
     });
 
-    fireEvent.change(screen.getByTestId("quill-editor"), {
+    fireEvent.change(screen.getByTestId("message-editor"), {
       target: { value: "Fresh off the press" },
     });
     fireEvent.click(screen.getByRole("button", { name: /send/i }));
@@ -665,8 +665,8 @@ describe("Conversation Component", () => {
     act(() => emit({ type: "typing", conversation_id: "1", user_id: "2" }));
     expect(screen.getByText("Bob is typing…")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByTestId("quill-editor"), { target: { value: "H" } });
-    fireEvent.change(screen.getByTestId("quill-editor"), { target: { value: "Hi" } });
+    fireEvent.change(screen.getByTestId("message-editor"), { target: { value: "H" } });
+    fireEvent.change(screen.getByTestId("message-editor"), { target: { value: "Hi" } });
     expect(sendTyping).toHaveBeenCalledTimes(1);
     expect(sendTyping).toHaveBeenCalledWith("1");
   });
@@ -688,6 +688,34 @@ describe("Conversation Component", () => {
     expect(screen.getAllByLabelText("online").length).toBeGreaterThan(0);
   });
 
+  it("sends with Enter", async () => {
+    api.post.mockResolvedValueOnce({
+      message: { id: 3, body: "Sent with enter", user_id: "1", conversation_id: "1" },
+    });
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    const editor = screen.getByTestId("message-editor");
+    fireEvent.change(editor, { target: { value: "Sent with enter" } });
+    fireEvent.keyDown(editor, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith("/api/conversations/1/messages", {
+        message: { body: "Sent with enter" },
+      });
+    });
+  });
+
   it("shows error notification when send message fails", async () => {
     // Mock the API response to throw an error
     api.post.mockRejectedValueOnce(new Error("Network error"));
@@ -705,7 +733,7 @@ describe("Conversation Component", () => {
     });
 
     // Type a message then send
-    fireEvent.change(screen.getByTestId("quill-editor"), {
+    fireEvent.change(screen.getByTestId("message-editor"), {
       target: { value: "Hello!" },
     });
     fireEvent.click(screen.getByRole("button", { name: /send/i }));

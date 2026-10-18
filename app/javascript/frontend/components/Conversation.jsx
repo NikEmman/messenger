@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import "../styles/Conversation.css";
-import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
-import "react-quill/dist/quill.snow.css";
 import { api } from "../api";
 import Spinner from "./Spinner";
+import MessageEditor from "./MessageEditor";
 import { onInboxEvent, sendTyping } from "../cable";
 
 function formatTime(timestamp) {
@@ -230,12 +229,12 @@ export default function Conversation({
     dialogRef.current?.close();
   };
 
-  const sendMessage = () => {
-    if (isEditorEmpty(message)) return;
+  const sendMessage = (html = message) => {
+    if (isEditorEmpty(html)) return;
 
     api
       .post(`/api/conversations/${conversation.id}/messages`, {
-        message: { body: message },
+        message: { body: html },
       })
       .then((data) => {
         stickToBottom.current = true;
@@ -314,14 +313,6 @@ export default function Conversation({
       })
       .catch(() => handleNotificationChange("Failed to leave conversation"))
       .finally(() => setRemovingId(null));
-  };
-
-  // Ctrl+Enter to send
-  const handleKeyDown = (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      sendMessage();
-    }
   };
 
   const canSend = !isEditorEmpty(message);
@@ -438,13 +429,18 @@ export default function Conversation({
         {typingText}
       </p>
 
-      <div className="messageInputArea" onKeyDown={handleKeyDown}>
-        <ReactQuill value={message} onChange={handleMessageChange} />
+      <div className="messageInputArea">
+        <MessageEditor
+          value={message}
+          onChange={handleMessageChange}
+          onSubmit={sendMessage}
+          placeholder={`Message ${conversation.topic}`}
+        />
         <div className="messageInputFooter">
-          <span className="sendHint">Ctrl+Enter to send</span>
+          <span className="sendHint">Enter to send · Shift+Enter for a new line</span>
           <button
             className="sendBtn"
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!canSend}
           >
             Send

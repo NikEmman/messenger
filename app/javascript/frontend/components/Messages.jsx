@@ -7,8 +7,10 @@ import { Navigate } from "react-router-dom";
 import { api } from "../api";
 import { onInboxEvent } from "../cable";
 
+// Plain-text preview of message HTML, keeping line breaks as spaces.
 function htmlToText(html) {
-  return new DOMParser().parseFromString(html || "", "text/html").body.textContent.trim();
+  const spaced = (html || "").replace(/<br\s*\/?>|<\/(div|p|li|h\d|blockquote|pre)>/gi, " ");
+  return new DOMParser().parseFromString(spaced, "text/html").body.textContent.replace(/\s+/g, " ").trim();
 }
 
 export default function Messages() {
