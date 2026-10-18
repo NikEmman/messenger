@@ -12,8 +12,8 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
-  config.fixture_paths = [Rails.root.join('spec/fixtures')]
-  
+  config.fixture_paths = [ Rails.root.join('spec/fixtures') ]
+
   # This rolls back the DB (including active_storage_db records) automatically!
   config.use_transactional_fixtures = true
 
@@ -23,7 +23,7 @@ RSpec.configure do |config|
   config.include AuthHelper, type: :request
   config.include FactoryBot::Syntax::Methods
 
-  # Optimization: Only purge if you aren't using the DB service for tests, 
+  # Optimization: Only purge if you aren't using the DB service for tests,
   # but since you have active_storage_db, you can safely remove the manual purge.
   # If you ever switch back to Disk storage in test, use a local temp folder instead.
 end

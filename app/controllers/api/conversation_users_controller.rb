@@ -42,14 +42,14 @@ module Api
       # Check if conversation has any remaining users
       if conversation.users.empty?
         conversation.destroy
-        return render json: { 
+        return render json: {
           message: "User removed and conversation deleted (was empty)",
           conversation_deleted: true,
           removed_user_id: removed_user_id
         }, status: :ok
       end
 
-      render json: { 
+      render json: {
         message: "User removed from conversation",
         conversation_deleted: false,
         removed_user_id: removed_user_id
