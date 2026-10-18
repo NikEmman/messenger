@@ -1,9 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import "../styles/Conversation.css";
 import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import { api } from "../api";
+import Spinner from "./Spinner";
 
 function formatTime(timestamp) {
   if (!timestamp) return "";
@@ -41,8 +42,70 @@ export default function Conversation({
   const [selection, setSelection] = useState(null);
   const [userList, setUserList] = useState([]);
   const [removingId, setRemovingId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const dialogRef = useRef(null);
+  const messagesRef = useRef(null);
   const messagesEndRef = useRef(null);
+  // Distance from the bottom to restore after prepending older messages.
+  const scrollAnchor = useRef(null);
+  // Whether the view should follow new messages (true while near the bottom).
+  const stickToBottom = useRef(true);
+
+  // Load the newest page of messages whenever the conversation changes
+  useEffect(() => {
+    let cancelled = false;
+    setMessages([]);
+    setHasMore(false);
+    setMessagesLoading(true);
+    api
+      .get(`/api/conversations/${conversation.id}/messages`)
+      .then((data) => {
+        if (cancelled) return;
+        stickToBottom.current = true;
+        setMessages(data.messages);
+        setHasMore(data.has_more);
+      })
+      .catch(() => !cancelled && handleNotificationChange("Failed to load messages"))
+      .finally(() => !cancelled && setMessagesLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [conversation.id]);
+
+  // Keep the scroll position sensible as messages are added
+  useLayoutEffect(() => {
+    const el = messagesRef.current;
+    if (el && scrollAnchor.current !== null) {
+      el.scrollTop = el.scrollHeight - scrollAnchor.current;
+      scrollAnchor.current = null;
+    } else if (stickToBottom.current) {
+      messagesEndRef.current?.scrollIntoView?.({ block: "end" });
+    }
+  }, [messages]);
+
+  const loadOlderMessages = () => {
+    if (!hasMore || loadingOlder || messages.length === 0) return;
+    setLoadingOlder(true);
+    api
+      .get(`/api/conversations/${conversation.id}/messages?before=${messages[0].id}`)
+      .then((data) => {
+        const el = messagesRef.current;
+        if (el) scrollAnchor.current = el.scrollHeight - el.scrollTop;
+        setMessages((prev) => [...data.messages, ...prev]);
+        setHasMore(data.has_more);
+      })
+      .catch(() => handleNotificationChange("Failed to load older messages"))
+      .finally(() => setLoadingOlder(false));
+  };
+
+  const handleMessagesScroll = (e) => {
+    const el = e.currentTarget;
+    stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    if (el.scrollTop < 80) loadOlderMessages();
+  };
 
   // Search users (debounced) while the "Add user" picker is open
   useEffect(() => {
@@ -57,14 +120,9 @@ export default function Conversation({
     return () => clearTimeout(timer);
   }, [searchText, showUserList]);
 
-  // Auto-scroll to bottom whenever messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView?.({ behavior: "smooth" });
-  }, [conversation.messages]);
-
-  const messages =
-    conversation.messages.length > 0 ? (
-      conversation.messages.map((msg) => {
+  const messageList =
+    messages.length > 0 ? (
+      messages.map((msg) => {
         const isOwn = msg.user_id === user.id;
         const className = isOwn ? "myMessage" : "message";
         const member = conversation.members.find((m) => m.id === msg.user_id);
@@ -83,6 +141,8 @@ export default function Conversation({
           </div>
         );
       })
+    ) : messagesLoading ? (
+      <Spinner label="Loading messages..." />
     ) : (
       <h2>No messages yet — say hello!</h2>
     );
@@ -112,14 +172,13 @@ export default function Conversation({
   const sendMessage = () => {
     if (isEditorEmpty(message)) return;
 
-    const newMessage = {
-      body: message,
-      conversation_id: conversation.id,
-    };
-
     api
-      .post("/api/messages", { message: newMessage })
+      .post(`/api/conversations/${conversation.id}/messages`, {
+        message: { body: message },
+      })
       .then((data) => {
+        stickToBottom.current = true;
+        setMessages((prev) => [...prev, data.message]);
         handleNotificationChange("Message successfully sent.");
         handleMessageSent(data.message);
       })
@@ -299,8 +358,17 @@ export default function Conversation({
         </div>
       </dialog>
 
-      <div className="messages">
-        {messages}
+      <div className="messages" ref={messagesRef} onScroll={handleMessagesScroll}>
+        {hasMore && (
+          <button
+            className="smallBtn loadOlderBtn"
+            onClick={loadOlderMessages}
+            disabled={loadingOlder}
+          >
+            {loadingOlder ? "Loading..." : "Load earlier messages"}
+          </button>
+        )}
+        {messageList}
         <div ref={messagesEndRef} />
       </div>
 

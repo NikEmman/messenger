@@ -47,15 +47,19 @@ describe("Conversation Component", () => {
   const mockConversation = {
     id: "1",
     topic: "Project Discussion",
-    messages: [
-      { id: "1", body: "Hello everyone!", user_id: "1" },
-      { id: "2", body: "Hi there!", user_id: "2" },
-    ],
     members: [
       { id: "1", name: "Alice", avatar_url: "alice_avatar.png", membership_id: "m1" },
       { id: "2", name: "Bob", avatar_url: "bob_avatar.png", membership_id: "m2" },
     ],
   };
+  const mockMessages = [
+    { id: 1, body: "Hello everyone!", user_id: "1" },
+    { id: 2, body: "Hi there!", user_id: "2" },
+  ];
+
+  // Responses for GET requests, routed by path; tests override as needed.
+  let messagesResponse;
+  let usersResponse;
 
   const mockUser = { id: "1", name: "Alice", avatar_url: "alice_avatar.png" };
   const defaultContextValue = {
@@ -71,6 +75,11 @@ describe("Conversation Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    messagesResponse = { messages: mockMessages, has_more: false };
+    usersResponse = { users: [] };
+    api.get.mockImplementation((path) =>
+      Promise.resolve(path.startsWith("/api/users") ? usersResponse : messagesResponse)
+    );
     mockDialog.showModal.mockClear();
     mockDialog.close.mockClear();
     window.confirm = jest.fn(() => true);
@@ -114,10 +123,10 @@ describe("Conversation Component", () => {
   });
 
   it("shows 'No messages' message when conversation has no messages", async () => {
+    messagesResponse = { messages: [], has_more: false };
     const emptyConversation = {
       id: "1",
       topic: "Empty Chat",
-      messages: [],
       members: [
         { id: "1", name: "Alice", avatar_url: "alice_avatar.png", membership_id: "m1" },
       ],
@@ -140,9 +149,9 @@ describe("Conversation Component", () => {
 
   it("calls handleMemberAdded when a user is added", async () => {
     // Mock the API response for fetching users
-    api.get.mockResolvedValue({
+    usersResponse = {
       users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
-    });
+    };
 
     // Render the component
     await act(async () => {
@@ -206,7 +215,6 @@ describe("Conversation Component", () => {
   });
 
   it("searches users on the server as you type", async () => {
-    api.get.mockResolvedValue({ users: [] });
 
     await act(async () => {
       renderConversation(defaultContextValue, {
@@ -232,9 +240,9 @@ describe("Conversation Component", () => {
 
   it("closes user selection when cancel is clicked", async () => {
     // Mock the API response for fetching users
-    api.get.mockResolvedValue({
+    usersResponse = {
       users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
-    });
+    };
 
     await act(async () => {
       renderConversation(defaultContextValue, {
@@ -541,7 +549,9 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       // Verify API call
-      expect(api.post).toHaveBeenCalledWith("/api/messages", expect.any(Object));
+      expect(api.post).toHaveBeenCalledWith("/api/conversations/1/messages", {
+        message: { body: "Hello!" },
+      });
       // Verify callback
       expect(mockHandleNotificationChange).toHaveBeenCalledWith("Message successfully sent.");
       expect(mockHandleMessageSent).toHaveBeenCalledWith({
@@ -551,6 +561,57 @@ describe("Conversation Component", () => {
         conversation_id: "1",
       });
     });
+  });
+
+  it("shows a sent message in the conversation", async () => {
+    api.post.mockResolvedValueOnce({
+      message: { id: 3, body: "Fresh off the press", user_id: "1", conversation_id: "1" },
+    });
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    fireEvent.change(screen.getByTestId("quill-editor"), {
+      target: { value: "Fresh off the press" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /send/i }));
+
+    expect(await screen.findByText("Fresh off the press")).toBeInTheDocument();
+  });
+
+  it("loads earlier messages on demand", async () => {
+    messagesResponse = { messages: mockMessages, has_more: true };
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    messagesResponse = {
+      messages: [{ id: 0, body: "The very first message", user_id: "2" }],
+      has_more: false,
+    };
+    fireEvent.click(screen.getByRole("button", { name: "Load earlier messages" }));
+
+    expect(await screen.findByText("The very first message")).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledWith("/api/conversations/1/messages?before=1");
+    expect(screen.queryByRole("button", { name: "Load earlier messages" })).not.toBeInTheDocument();
   });
 
   it("shows error notification when send message fails", async () => {

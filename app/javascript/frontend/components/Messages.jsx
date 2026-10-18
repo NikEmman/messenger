@@ -6,6 +6,10 @@ import Spinner from "./Spinner";
 import { Navigate } from "react-router-dom";
 import { api } from "../api";
 
+function htmlToText(html) {
+  return new DOMParser().parseFromString(html || "", "text/html").body.textContent.trim();
+}
+
 export default function Messages() {
   const [conversations, setConversations] = useState([]);
   const [conversationsLoading, setConversationsLoading] = useState(true);
@@ -22,26 +26,36 @@ export default function Messages() {
     return () => clearTimeout(timer);
   }, [notification]);
 
+  const updateConversation = (id, changes) =>
+    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, ...changes } : c)));
+
   const handleGroupChatSideClick = (id) => {
     setNotification("");
     setConversationId(id);
+    updateConversation(id, { unread_count: 0 });
+    api.post(`/api/conversations/${id}/read`).catch(() => {});
   };
 
   const handleNotificationChange = (newNotification) => {
     setNotification(newNotification);
   };
 
+  // Refresh the sidebar preview and move the conversation to the top
   const handleMessageSent = (message) => {
-    const newConversations = conversations.map((conversation) => {
-      if (conversation.id === conversationId) {
-        return {
-          ...conversation,
-          messages: [...conversation.messages, message],
-        };
-      }
-      return conversation;
+    setConversations((prev) => {
+      const target = prev.find((c) => c.id === message.conversation_id);
+      if (!target) return prev;
+      const updated = {
+        ...target,
+        last_message: {
+          id: message.id,
+          user_id: message.user_id,
+          preview: htmlToText(message.body),
+          created_at: message.created_at,
+        },
+      };
+      return [updated, ...prev.filter((c) => c.id !== target.id)];
     });
-    setConversations(newConversations);
   };
 
   const handleConversationDelete = (id) => {
@@ -97,7 +111,7 @@ export default function Messages() {
       api
         .post("/api/conversations", { conversation: newConversation })
         .then((data) => {
-          setConversations([...conversations, data.conversation]);
+          setConversations([data.conversation, ...conversations]);
           setTopic("");
           setFormErrors({});
         })

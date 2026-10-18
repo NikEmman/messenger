@@ -20,18 +20,40 @@ RSpec.describe Api::ConversationsController, type: :request do
         expect(json_response['conversations']).to eq([])
       end
 
-      it 'returns only conversations the user belongs to' do
+      it 'returns summaries of conversations the user belongs to' do
         create(:conversation_user, user: user, conversation: conversation)
-        create(:message, :with_plain_text, conversation: conversation, user: user)
+        message = create(:message, :with_plain_text, conversation: conversation, user: user)
         others_conversation
 
         get '/api/conversations'
 
         expect(json_response['conversations'].map { |c| c['id'] }).to eq([ conversation.id ])
-        expect(json_response['conversations'].first).to include(
-          'topic' => conversation.topic,
-          'messages' => [ a_hash_including('body' => a_string_including('Plain text message'), 'user_id' => user.id) ]
-        )
+        summary = json_response['conversations'].first
+        expect(summary).to include('topic' => conversation.topic, 'unread_count' => 0)
+        expect(summary['last_message']).to include('id' => message.id, 'preview' => 'Plain text message')
+        expect(summary).not_to have_key('messages')
+      end
+
+      it 'orders conversations by most recent activity' do
+        quiet = create(:conversation, topic: 'Quiet', created_at: 1.day.ago)
+        busy = create(:conversation, topic: 'Busy', created_at: 2.days.ago)
+        [ quiet, busy ].each { |c| create(:conversation_user, user: user, conversation: c) }
+        create(:message, conversation: busy)
+
+        get '/api/conversations'
+
+        expect(json_response['conversations'].map { |c| c['topic'] }).to eq(%w[Busy Quiet])
+      end
+
+      it "counts unread messages from others since the user's last read" do
+        create(:conversation_user, user: user, conversation: conversation, last_read_at: 1.hour.ago)
+        create(:message, conversation: conversation, created_at: 2.hours.ago)
+        create_list(:message, 2, conversation: conversation)
+        create(:message, conversation: conversation, user: user)
+
+        get '/api/conversations'
+
+        expect(json_response['conversations'].first['unread_count']).to eq(2)
       end
     end
 
@@ -67,6 +89,20 @@ RSpec.describe Api::ConversationsController, type: :request do
         get "/api/conversations/#{others_conversation.id}"
 
         expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    describe 'POST /api/conversations/:id/read' do
+      it 'marks the conversation as read for the current user' do
+        membership = create(:conversation_user, user: user, conversation: conversation)
+        create(:message, conversation: conversation)
+
+        post "/api/conversations/#{conversation.id}/read"
+
+        expect(response).to have_http_status(:no_content)
+        expect(membership.reload.last_read_at).to be_within(5.seconds).of(Time.current)
+        get '/api/conversations'
+        expect(json_response['conversations'].first['unread_count']).to eq(0)
       end
     end
 

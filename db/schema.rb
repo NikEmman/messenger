@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_18_173007) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_18_173519) do
   create_table "action_text_rich_texts", force: :cascade do |t|
     t.string "name", null: false
     t.text "body"
@@ -61,6 +61,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_18_173007) do
     t.bigint "conversation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_read_at"
     t.index ["conversation_id", "user_id"], name: "index_conversation_users_on_conversation_id_and_user_id", unique: true
     t.index ["user_id"], name: "index_conversation_users_on_user_id"
   end
@@ -69,6 +70,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_18_173007) do
     t.string "topic"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_message_at"
+    t.index ["last_message_at"], name: "index_conversations_on_last_message_at"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -76,7 +79,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_18_173007) do
     t.bigint "conversation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["conversation_id", "id"], name: "index_messages_on_conversation_id_and_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
   end
 

@@ -18,27 +18,23 @@ function formatPreviewTime(timestamp) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function stripHtml(html) {
-  return html?.replace(/<[^>]*>/g, "").trim() || "";
-}
-
 export default function GroupChatSide({ onDeleteClick, conversation, user, onClick, isActive }) {
   const otherMembers = conversation.members.filter((m) => m.id !== user.id);
   const maxVisibleAvatars = 5;
   const visibleMembers = otherMembers.slice(0, maxVisibleAvatars);
   const overflowCount = otherMembers.length - maxVisibleAvatars;
 
-  const msgs = conversation.messages || [];
-  const lastMessage = msgs[msgs.length - 1];
+  const lastMessage = conversation.last_message;
   const lastSender = lastMessage
     ? conversation.members.find((m) => m.id === lastMessage.user_id)
     : null;
-  const preview = lastMessage
-    ? `${lastSender?.name || lastSender?.email || "Someone"}: ${stripHtml(lastMessage.body)}`
-    : "No messages yet";
+  const senderName =
+    lastMessage?.user_id === user.id ? "You" : lastSender?.name || lastSender?.email || "Someone";
+  const preview = lastMessage ? `${senderName}: ${lastMessage.preview}` : "No messages yet";
+  const unreadCount = isActive ? 0 : conversation.unread_count || 0;
 
   return (
-    <div className={`groupChat${isActive ? " active" : ""}`}>
+    <div className={`groupChat${isActive ? " active" : ""}${unreadCount ? " unread" : ""}`}>
       <div className="groupChatContent" onClick={onClick}>
         <div className="groupChatTopRow">
           <div className="stackedAvatars">
@@ -65,7 +61,14 @@ export default function GroupChatSide({ onDeleteClick, conversation, user, onCli
             )}
           </div>
         </div>
-        <p className="groupChatPreview">{preview}</p>
+        <div className="groupChatBottomRow">
+          <p className="groupChatPreview">{preview}</p>
+          {unreadCount > 0 && (
+            <span className="unreadBadge" aria-label={`${unreadCount} unread`}>
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </div>
       </div>
       <button
         className="deleteBtn"

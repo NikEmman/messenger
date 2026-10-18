@@ -116,6 +116,10 @@
   gap: 0.75rem;
 }
 
+.loadOlderBtn {
+  align-self: center;
+}
+
 .messages::-webkit-scrollbar {
   width: 6px;
 }

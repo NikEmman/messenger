@@ -227,4 +227,58 @@ describe("GroupChatSide", () => {
     const avatarsContainer = document.querySelector(".stackedAvatars");
     expect(avatarsContainer).toBeInTheDocument();
   });
+
+  it("shows the last message preview with the sender's name", () => {
+    render(
+      <GroupChatSide
+        conversation={{
+          ...mockConversation,
+          last_message: { id: 9, user_id: "2", preview: "See you there", created_at: null },
+        }}
+        user={mockUser}
+        onClick={mockOnClick}
+        onDeleteClick={mockOnDeleteClick}
+      />
+    );
+    expect(screen.getByText("Bob: See you there")).toBeInTheDocument();
+  });
+
+  it("labels the current user's own last message as You", () => {
+    render(
+      <GroupChatSide
+        conversation={{
+          ...mockConversation,
+          last_message: { id: 9, user_id: "1", preview: "On my way", created_at: null },
+        }}
+        user={mockUser}
+        onClick={mockOnClick}
+        onDeleteClick={mockOnDeleteClick}
+      />
+    );
+    expect(screen.getByText("You: On my way")).toBeInTheDocument();
+  });
+
+  it("shows an unread badge unless the conversation is open", () => {
+    const conversation = { ...mockConversation, unread_count: 3 };
+    const { rerender } = render(
+      <GroupChatSide
+        conversation={conversation}
+        user={mockUser}
+        onClick={mockOnClick}
+        onDeleteClick={mockOnDeleteClick}
+      />
+    );
+    expect(screen.getByLabelText("3 unread")).toHaveTextContent("3");
+
+    rerender(
+      <GroupChatSide
+        conversation={conversation}
+        user={mockUser}
+        onClick={mockOnClick}
+        onDeleteClick={mockOnDeleteClick}
+        isActive
+      />
+    );
+    expect(screen.queryByLabelText("3 unread")).not.toBeInTheDocument();
+  });
 });
