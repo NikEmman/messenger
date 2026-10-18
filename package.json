@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "NODE_ENV=production esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --define:process.env.NODE_ENV='\"production\"' --minify",
-    "build:dev": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --watch --define:process.env.NODE_ENV='\"development\"'"
+    "build:dev": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets --watch --define:process.env.NODE_ENV='\"development\"'",
+    "test": "jest"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
