@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
+import React, { useState, useContext, useEffect, useMemo, useRef } from "react";
 import { AppContext } from "./AppContext";
 import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
@@ -33,6 +33,21 @@ export default function Messages() {
     const timer = setTimeout(() => setNotification(null), 4000);
     return () => clearTimeout(timer);
   }, [notification]);
+
+  // Apply the `online` flag that comes with member payloads (initial load,
+  // newly added members and conversations) to the presence set.
+  const notePresence = (members) =>
+    setOnlineUserIds((prev) => {
+      const next = new Set(prev);
+      members.forEach((m) => (m.online ? next.add(m.id) : next.delete(m.id)));
+      return next;
+    });
+
+  // You're always online to yourself, even before your own socket connects.
+  const visibleOnlineIds = useMemo(
+    () => new Set([...onlineUserIds, user.id]),
+    [onlineUserIds, user.id]
+  );
 
   const updateConversation = (id, changes) =>
     setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, ...changes } : c)));
@@ -89,6 +104,7 @@ export default function Messages() {
             });
             break;
           case "conversation_added":
+            notePresence(event.conversation.members);
             setConversations((prev) =>
               prev.some((c) => c.id === event.conversation.id)
                 ? prev
@@ -103,6 +119,7 @@ export default function Messages() {
             }
             break;
           case "member_added":
+            notePresence([event.member]);
             setConversations((prev) =>
               prev.map((c) =>
                 c.id === event.conversation_id && !c.members.some((m) => m.id === event.member.id)
@@ -136,6 +153,7 @@ export default function Messages() {
   };
 
   const handleMemberAdded = (newMember) => {
+    notePresence([newMember]);
     const newConversations = conversations.map((conversation) => {
       if (conversation.id === conversationId) {
         return { ...conversation, members: [...conversation.members, newMember] };
@@ -191,11 +209,7 @@ export default function Messages() {
       .get("/api/conversations")
       .then((data) => {
         setConversations(data.conversations);
-        setOnlineUserIds(
-          new Set(
-            data.conversations.flatMap((c) => c.members.filter((m) => m.online).map((m) => m.id))
-          )
-        );
+        notePresence(data.conversations.flatMap((c) => c.members));
       })
       .catch((error) => console.error("Error fetching conversations:", error))
       .finally(() => setConversationsLoading(false));
@@ -221,7 +235,7 @@ export default function Messages() {
         user={user}
         onClick={() => handleGroupChatSideClick(conversation.id)}
         isActive={conversation.id === conversationId}
-        onlineUserIds={onlineUserIds}
+        onlineUserIds={visibleOnlineIds}
       />
     ));
 
@@ -253,7 +267,7 @@ export default function Messages() {
             handleMemberAdded={handleMemberAdded}
             handleMemberRemoved={handleMemberRemoved}
             handleConversationDeleted={handleConversationDelete}
-            onlineUserIds={onlineUserIds}
+            onlineUserIds={visibleOnlineIds}
             onBack={() => setConversationId(null)}
           />
         ) : (

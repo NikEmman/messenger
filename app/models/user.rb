@@ -12,9 +12,41 @@ class User < ApplicationRecord
   has_many :conversations, through: :conversation_users
   has_one :profile, dependent: :destroy
 
+  # Presence: a user is online while they have an open Action Cable connection
+  # that has sent a heartbeat recently (the window bounds stale counts left
+  # behind if the server dies without running disconnect callbacks).
   ONLINE_WINDOW = 70.seconds
 
   def online?
-    last_seen_at.present? && last_seen_at > ONLINE_WINDOW.ago
+    cable_connections.positive? && last_seen_at.present? && last_seen_at > ONLINE_WINDOW.ago
+  end
+
+  # Returns true when this connection brought the user online.
+  def connect_cable!
+    reload
+    was_online = online?
+    # If they looked offline, any counted connections are stale: start over.
+    count = was_online ? Arel.sql("cable_connections + 1") : 1
+    self.class.where(id: id).update_all(cable_connections: count, last_seen_at: Time.current)
+    reload
+    !was_online
+  end
+
+  # Returns true when this was the user's last open connection.
+  def disconnect_cable!
+    self.class.where(id: id).update_all(
+      Arel.sql("cable_connections = CASE WHEN cable_connections > 0 THEN cable_connections - 1 ELSE 0 END")
+    )
+    reload
+    cable_connections.zero?
+  end
+
+  # Heartbeat from an open connection. Returns true if it brought the user
+  # back online (e.g. after their count was reset by another connection).
+  def touch_presence!
+    reload
+    was_online = online?
+    update_columns(last_seen_at: Time.current, cable_connections: [ cable_connections, 1 ].max)
+    !was_online
   end
 end

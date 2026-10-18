@@ -136,6 +136,40 @@ describe("Messages Component", () => {
     expect(screen.queryByText("Project Discussion")).not.toBeInTheDocument();
   });
 
+  it("marks newly added members online from their payload", async () => {
+    api.get.mockResolvedValueOnce({
+      conversations: [
+        { id: 1, topic: "Project Discussion", members: [], last_message: null, unread_count: 0 },
+      ],
+    });
+
+    await act(async () => {
+      renderMessages(defaultContextValue);
+    });
+
+    act(() =>
+      emit({
+        type: "member_added",
+        conversation_id: 1,
+        member: { id: "2", name: "Bob", avatar_url: "bob.png", online: true },
+      })
+    );
+    expect(screen.getByAltText("Bob")).toHaveClass("online");
+
+    act(() =>
+      emit({
+        type: "conversation_added",
+        conversation: {
+          id: 2,
+          topic: "New chat",
+          members: [{ id: "3", name: "Carol", avatar_url: "carol.png", online: true }],
+          last_message: null,
+        },
+      })
+    );
+    expect(screen.getByAltText("Carol")).toHaveClass("online");
+  });
+
   it("switches between the list and the chat screen", async () => {
     api.get
       .mockResolvedValueOnce({

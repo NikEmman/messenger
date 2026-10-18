@@ -34,6 +34,40 @@ RSpec.describe InboxChannel, type: :channel do
     expect(user.reload).not_to be_online
   end
 
+  it 'stays online while another tab is still connected' do
+    subscribe
+    user.update_column(:cable_connections, 2) # a second tab subscribed
+
+    expect { unsubscribe }
+      .not_to have_broadcasted_to(InboxChannel.broadcasting_for(friend))
+    expect(user.reload).to be_online
+  end
+
+  it 'does not re-announce a user who is already online in another tab' do
+    user.update_columns(cable_connections: 1, last_seen_at: Time.current)
+
+    expect { subscribe }
+      .not_to have_broadcasted_to(InboxChannel.broadcasting_for(friend))
+    expect(user.reload.cable_connections).to eq(2)
+  end
+
+  it 'discards stale connection counts left by a crashed server' do
+    user.update_columns(cable_connections: 3, last_seen_at: 10.minutes.ago)
+
+    expect { subscribe }
+      .to have_broadcasted_to(InboxChannel.broadcasting_for(friend)).with(type: "presence", user_id: user.id, online: true)
+    expect(user.reload.cable_connections).to eq(1)
+  end
+
+  it 'heartbeats keep the user online and bring them back if they lapsed' do
+    subscribe
+    user.update_column(:last_seen_at, 2.minutes.ago)
+
+    expect { perform :appear }
+      .to have_broadcasted_to(InboxChannel.broadcasting_for(friend)).with(type: "presence", user_id: user.id, online: true)
+    expect(user.reload).to be_online
+  end
+
   describe '#typing' do
     before { subscribe }
 
