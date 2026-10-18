@@ -4,6 +4,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import "@testing-library/jest-dom";
 import Login from "../components/Login";
 import { AppContext } from "../components/AppContext";
+import { api, ApiError } from "../api";
+
+jest.mock("../api");
 
 describe("Login Component", () => {
   const mockHandleSuccessfulAuth = jest.fn();
@@ -26,7 +29,6 @@ describe("Login Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn();
   });
 
   test("renders login form with empty values", () => {
@@ -70,9 +72,7 @@ describe("Login Component", () => {
   });
 
   test("displays login error message", async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ status: 401, logged_in: false }),
-    });
+    api.post.mockRejectedValueOnce(new ApiError(401, { logged_in: false }));
 
     renderWithRouter(<Login />);
 
@@ -113,13 +113,7 @@ describe("Login Component", () => {
   });
 
   test("submits form data correctly", async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "created",
-          user: { email: "test@example.com" },
-        }),
-    });
+    api.post.mockResolvedValueOnce({ user: { email: "test@example.com" } });
 
     renderWithRouter(<Login />);
 

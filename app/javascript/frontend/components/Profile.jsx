@@ -4,13 +4,14 @@ import { Navigate, useParams } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import ProfileForm from "./ProfileForm";
 import Spinner from "./Spinner";
+import { api } from "../api";
 
 export default function Profile() {
   const { id } = useParams();
   const [profile, setProfile] = useState({});
   const [profileLoading, setProfileLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const { user, loggedInStatus, url } = useContext(AppContext);
+  const { user, loggedInStatus } = useContext(AppContext);
 
   if (loggedInStatus === "NOT_LOGGED_IN") {
     return <Navigate to="/" replace />;
@@ -20,13 +21,13 @@ export default function Profile() {
 
   useEffect(() => {
     setProfileLoading(true);
-    fetch(`${url}/api/profiles/${id}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "not_found") setProfile({});
-        else setProfile(data);
+    api
+      .get(`/api/profiles/${id}`)
+      .then((data) => setProfile(data))
+      .catch((error) => {
+        setProfile({});
+        if (error.status !== 404) console.error("Unable to load profile: ", error);
       })
-      .catch((error) => console.error("Unable to load profile: ", error))
       .finally(() => setProfileLoading(false));
   }, [id]);
 
@@ -41,13 +42,8 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch(`${url}/api/profiles/`, {
-      method: "POST",
-      body: formData,
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .postForm("/api/profiles", formData)
       .then((data) => {
         setProfile(data.profile);
         setShowForm(false);
@@ -65,13 +61,8 @@ export default function Profile() {
       formData.append("profile[avatar]", data.avatar);
     }
 
-    fetch(`${url}/api/profiles/${profile.id}`, {
-      method: "PUT",
-      body: formData,
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .putForm(`/api/profiles/${profile.id}`, formData)
       .then((data) => {
         setProfile(data.profile);
         setShowForm(false);

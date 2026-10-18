@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
+import { api } from "../api";
 import "../styles/Navbar.css";
 
 export default function Navbar() {
-  const { user, loggedInStatus, handleSuccessfulLogOut, url } =
+  const { user, loggedInStatus, handleSuccessfulLogOut } =
     useContext(AppContext);
   const navigate = useNavigate();
 
@@ -23,19 +24,12 @@ export default function Navbar() {
   }, [darkMode]);
 
   const handleLogOut = () => {
-    fetch(`${url}/api/logout`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.logged_out) {
-          handleSuccessfulLogOut();
-          navigate("/");
-        }
-      });
+    api.delete("/api/logout").then((data) => {
+      if (data.logged_out) {
+        handleSuccessfulLogOut();
+        navigate("/");
+      }
+    });
   };
 
   return (

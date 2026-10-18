@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AppContext } from "../components/AppContext";
 import Navbar from "../components/Navbar";
 import "@testing-library/jest-dom";
+import { api } from "../api";
 
 // Mock react-router-dom's useNavigate
 const mockNavigate = jest.fn();
@@ -12,15 +13,13 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock fetch
-global.fetch = jest.fn();
+jest.mock("../api");
 
 // Helper function to render Navbar with necessary providers
 const renderNavbar = (props = {}) => {
   const defaultContextValue = {
     user: { id: "123" },
     loggedInStatus: "LOGGED_IN",
-    url: "http://localhost:3000", // Added the url property
     handleSuccessfulLogOut: jest.fn(),
     ...props.contextValue,
   };
@@ -79,9 +78,7 @@ describe("Navbar Component", () => {
 
   test("handles logout successfully", async () => {
     // Mock successful logout response
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ logged_out: true }),
-    });
+    api.delete.mockResolvedValueOnce({ logged_out: true });
 
     const mockHandleSuccessfulLogOut = jest.fn();
     renderNavbar({
@@ -94,15 +91,7 @@ describe("Navbar Component", () => {
     fireEvent.click(logoutButton);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/logout",
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          mode: "cors",
-        }
-      );
+      expect(api.delete).toHaveBeenCalledWith("/api/logout");
       expect(mockHandleSuccessfulLogOut).toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith("/");
     });

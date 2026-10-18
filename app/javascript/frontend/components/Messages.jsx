@@ -4,6 +4,7 @@ import Conversation from "./Conversation";
 import GroupChatSide from "./GroupChatSide";
 import Spinner from "./Spinner";
 import { Navigate } from "react-router-dom";
+import { api } from "../api";
 
 export default function Messages() {
   const [conversations, setConversations] = useState([]);
@@ -11,7 +12,7 @@ export default function Messages() {
   const [conversationId, setConversationId] = useState(null);
   const [topic, setTopic] = useState("");
   const [formErrors, setFormErrors] = useState({});
-  const { user, loggedInStatus, url } = useContext(AppContext);
+  const { user, loggedInStatus } = useContext(AppContext);
   const [notification, setNotification] = useState("");
 
   // Auto-dismiss notifications after 4 seconds
@@ -93,49 +94,33 @@ export default function Messages() {
         topic: topic,
       };
 
-      fetch(`${url}/api/conversations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversation: newConversation }),
-        credentials: "include",
-        mode: "cors",
-      })
-        .then((response) => response.json())
+      api
+        .post("/api/conversations", { conversation: newConversation })
         .then((data) => {
-          if (data.status === "created") {
-            setConversations([...conversations, data.conversation]);
-            setTopic("");
-            setFormErrors({});
-          }
+          setConversations([...conversations, data.conversation]);
+          setTopic("");
+          setFormErrors({});
         })
-        .catch((error) => console.error("Error creating conversation:", error));
+        .catch(() => setNotification("Failed to create conversation"));
     }
   };
 
   useEffect(() => {
-    fetch(`${url}/api/conversations`)
-      .then((response) => response.json())
+    api
+      .get("/api/conversations")
       .then((data) => setConversations(data.conversations))
       .catch((error) => console.error("Error fetching conversations:", error))
       .finally(() => setConversationsLoading(false));
   }, []);
 
   const onDeleteClick = (id) => {
-    fetch(`${url}/api/conversations/${id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => {
-        if (response.ok) {
-          setNotification("Conversation deleted successfully");
-          handleConversationDelete(id);
-        } else {
-          setNotification("Failed to delete conversation");
-        }
+    api
+      .delete(`/api/conversations/${id}`)
+      .then(() => {
+        setNotification("Conversation deleted successfully");
+        handleConversationDelete(id);
       })
-      .catch((error) => console.error("Error deleting conversation:", error));
+      .catch(() => setNotification("Failed to delete conversation"));
   };
 
   const conversationsList =

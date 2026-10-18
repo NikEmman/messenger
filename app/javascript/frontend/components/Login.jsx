@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import "../styles/Profile.css";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "./AppContext";
+import { api } from "../api";
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ export default function Login() {
   const [formErrors, setFormErrors] = useState({});
   const [loginError, setLoginError] = useState("");
 
-  const { handleSuccessfulAuth, loggedInStatus, user, url } =
+  const { handleSuccessfulAuth, loggedInStatus, user } =
     useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
@@ -53,24 +54,16 @@ export default function Login() {
         },
       };
 
-      fetch(`${url}/api/sessions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-        mode: "cors",
-      })
-        .then((response) => response.json())
+      api
+        .post("/api/sessions", data)
         .then((data) => {
-          if (data.status === "created") {
-            handleSuccessfulAuth(data.user);
-            messagesRouter();
-          } else if (!data.logged_in) {
-            setLoginError("Wrong email or password");
-          }
+          handleSuccessfulAuth(data.user);
+          messagesRouter();
         })
         .catch((error) => {
-          setLoginError(error.toString());
+          setLoginError(
+            error.status === 401 ? "Wrong email or password" : error.message
+          );
         });
     }
   };

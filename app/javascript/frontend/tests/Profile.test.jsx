@@ -5,6 +5,9 @@ import "@testing-library/jest-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppContext } from "../components/AppContext";
 import Profile from "../components/Profile";
+import { api, ApiError } from "../api";
+
+jest.mock("../api");
 
 // Mock ProfileForm component
 jest.mock("../components/ProfileForm", () => {
@@ -27,15 +30,11 @@ jest.mock("../components/ProfileForm", () => {
   };
 });
 
-// Mock fetch
-global.fetch = jest.fn();
-
 // Helper function to render Profile with necessary providers and mocks
 const renderProfile = (props = {}) => {
   const defaultContextValue = {
     user: { id: 1, name: "Test User" },
     loggedInStatus: "LOGGED_IN",
-    url: "http://localhost:3000",
     ...props.contextValue,
   };
 
@@ -67,7 +66,6 @@ describe("Profile Component", () => {
       contextValue: {
         user: {},
         loggedInStatus: "NOT_LOGGED_IN",
-        url: "http://localhost:3000",
       },
     });
 
@@ -75,9 +73,7 @@ describe("Profile Component", () => {
   });
 
   test("shows create profile form for current user with no profile", async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ status: "not_found" }),
-    });
+    api.get.mockRejectedValueOnce(new ApiError(404, null));
 
     renderProfile();
 
@@ -86,16 +82,11 @@ describe("Profile Component", () => {
       expect(screen.getByTestId("profile-form")).toBeInTheDocument();
     });
 
-    // Verify the correct URL was used in fetch
-    expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/profiles/1"
-    );
+    expect(api.get).toHaveBeenCalledWith("/api/profiles/1");
   });
 
   test("shows message for non-existent profile of other user", async () => {
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve({ status: "not_found" }),
-    });
+    api.get.mockRejectedValueOnce(new ApiError(404, null));
 
     window.history.pushState({}, "", "/profile/2");
     renderProfile();
@@ -106,10 +97,7 @@ describe("Profile Component", () => {
       ).toBeInTheDocument();
     });
 
-    // Verify the correct URL was used in fetch
-    expect(global.fetch).toHaveBeenCalledWith(
-      "http://localhost:3000/api/profiles/2"
-    );
+    expect(api.get).toHaveBeenCalledWith("/api/profiles/2");
   });
 
   test("displays profile information when profile exists", async () => {
@@ -121,9 +109,7 @@ describe("Profile Component", () => {
       avatar_url: "test.jpg",
     };
 
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(mockProfile),
-    });
+    api.get.mockResolvedValueOnce(mockProfile);
 
     renderProfile();
 
@@ -144,9 +130,7 @@ describe("Profile Component", () => {
       avatar_url: "test.jpg",
     };
 
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(mockProfile),
-    });
+    api.get.mockResolvedValueOnce(mockProfile);
 
     renderProfile();
 
@@ -156,24 +140,15 @@ describe("Profile Component", () => {
   });
 
   test("handles create profile submission", async () => {
-    global.fetch.mockImplementation((url) => {
-      if (url.includes("/api/profiles/1")) {
-        return Promise.resolve({
-          json: () => Promise.resolve({ status: "not_found" }),
-        });
-      }
-      return Promise.resolve({
-        json: () =>
-          Promise.resolve({
-            profile: {
-              id: 1,
-              name: "Test User",
-              address: "123 Test St",
-              birthday: "1990-01-01",
-              avatar_url: "test.jpg",
-            },
-          }),
-      });
+    api.get.mockRejectedValueOnce(new ApiError(404, null));
+    api.postForm.mockResolvedValueOnce({
+      profile: {
+        id: 1,
+        name: "Test User",
+        address: "123 Test St",
+        birthday: "1990-01-01",
+        avatar_url: "test.jpg",
+      },
     });
 
     renderProfile();
@@ -211,16 +186,8 @@ describe("Profile Component", () => {
       expect.any(File)
     );
 
-    // Verify fetch call
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/profiles/",
-        expect.objectContaining({
-          method: "POST",
-          credentials: "include",
-          mode: "cors",
-        })
-      );
+      expect(api.postForm).toHaveBeenCalledWith("/api/profiles", expect.anything());
     });
   });
 
@@ -234,27 +201,9 @@ describe("Profile Component", () => {
       avatar_url: "test.jpg",
     };
 
-    // Setup fetch mock to handle both the initial GET and subsequent PUT
-    let fetchCallCount = 0;
-    global.fetch.mockImplementation((url, options) => {
-      fetchCallCount++;
-      if (fetchCallCount === 1) {
-        // Initial GET request
-        return Promise.resolve({
-          json: () => Promise.resolve(mockProfile),
-        });
-      } else {
-        // PUT request
-        return Promise.resolve({
-          json: () =>
-            Promise.resolve({
-              profile: {
-                ...mockProfile,
-                address: "456 Update St",
-              },
-            }),
-        });
-      }
+    api.get.mockResolvedValueOnce(mockProfile);
+    api.putForm.mockResolvedValueOnce({
+      profile: { ...mockProfile, address: "456 Update St" },
     });
 
     renderProfile();
@@ -303,17 +252,8 @@ describe("Profile Component", () => {
       expect.any(File)
     );
 
-    // Verify the PUT request
     await waitFor(() => {
-      const putCall = global.fetch.mock.calls.find(
-        (call) => call[1]?.method === "PUT"
-      );
-      expect(putCall[0]).toBe("http://localhost:3000/api/profiles/1");
-      expect(putCall[1]).toMatchObject({
-        method: "PUT",
-        credentials: "include",
-        mode: "cors",
-      });
+      expect(api.putForm).toHaveBeenCalledWith("/api/profiles/1", expect.anything());
     });
   });
 
@@ -326,9 +266,7 @@ describe("Profile Component", () => {
       avatar_url: "test.jpg",
     };
 
-    global.fetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(mockProfile),
-    });
+    api.get.mockResolvedValueOnce(mockProfile);
 
     window.history.pushState({}, "", "/profile/2");
     renderProfile();
@@ -343,10 +281,7 @@ describe("Profile Component", () => {
     const originalConsoleError = console.error;
     console.error = jest.fn();
 
-    // Mock fetch to throw an error
-    global.fetch.mockImplementation(() => {
-      return Promise.reject(new Error("Network error"));
-    });
+    api.get.mockRejectedValueOnce(new Error("Network error"));
 
     renderProfile();
 
@@ -363,15 +298,8 @@ describe("Profile Component", () => {
   });
 
   test("handles profile creation error", async () => {
-    // Mock fetch to return not_found for the profile and then error for create
-    global.fetch.mockImplementation((url, options) => {
-      if (options?.method === "POST") {
-        return Promise.reject(new Error("Creation failed"));
-      }
-      return Promise.resolve({
-        json: () => Promise.resolve({ status: "not_found" }),
-      });
-    });
+    api.get.mockRejectedValueOnce(new ApiError(404, null));
+    api.postForm.mockRejectedValueOnce(new Error("Creation failed"));
 
     // Mock console.error
     const originalConsoleError = console.error;

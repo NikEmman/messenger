@@ -10,12 +10,12 @@ import { BrowserRouter } from "react-router-dom";
 import "@testing-library/jest-dom";
 import Conversation from "../components/Conversation";
 import { AppContext } from "../components/AppContext";
+import { api } from "../api";
 
 // Use the __mocks__/react-quill.jsx stub so we can interact with the editor
 jest.mock("react-quill");
 
-// Mock fetch
-global.fetch = jest.fn();
+jest.mock("../api");
 
 // Mock dialog showModal and close methods for JSDOM
 const mockDialog = {
@@ -61,7 +61,6 @@ describe("Conversation Component", () => {
   const defaultContextValue = {
     user: mockUser,
     loggedInStatus: "LOGGED_IN",
-    url: "http://localhost:3000",
   };
 
   const mockHandleNotificationChange = jest.fn();
@@ -72,7 +71,6 @@ describe("Conversation Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch.mockReset();
     mockDialog.showModal.mockClear();
     mockDialog.close.mockClear();
     window.confirm = jest.fn(() => true);
@@ -141,13 +139,10 @@ describe("Conversation Component", () => {
   });
 
   it("calls handleMemberAdded when a user is added", async () => {
-    // Mock the fetch response for fetching users
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "ok",
-          users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
-        }),
+    // Mock the API response for fetching users
+    api.get.mockResolvedValueOnce({
+      status: "ok",
+      users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
     });
 
     // Render the component
@@ -172,17 +167,14 @@ describe("Conversation Component", () => {
       expect(screen.getByPlaceholderText("Search users")).toBeInTheDocument();
     });
 
-    // Mock the fetch response for adding a user
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "created",
-          member: {
-            id: "3",
-            name: "Charlie",
-            email: "charlie@example.com",
-          },
-        }),
+    // Mock the API response for adding a user
+    api.post.mockResolvedValueOnce({
+      status: "created",
+      member: {
+        id: "3",
+        name: "Charlie",
+        email: "charlie@example.com",
+      },
     });
 
     // Search for a user and select from dropdown
@@ -203,8 +195,8 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       // Assert the API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/conversation_users",
+      expect(api.post).toHaveBeenCalledWith(
+        "/api/conversation_users",
         expect.any(Object)
       );
       // Assert notifications and callback
@@ -218,13 +210,10 @@ describe("Conversation Component", () => {
   });
 
   it("closes user selection when cancel is clicked", async () => {
-    // Mock the fetch response for fetching users
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "ok",
-          users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
-        }),
+    // Mock the API response for fetching users
+    api.get.mockResolvedValueOnce({
+      status: "ok",
+      users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
     });
 
     await act(async () => {
@@ -329,13 +318,10 @@ describe("Conversation Component", () => {
   });
 
   it("calls handleMemberRemoved when remove button is clicked", async () => {
-    // Mock the fetch response for removing a member
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "ok",
-          removed_user_id: "2",
-        }),
+    // Mock the API response for removing a member
+    api.delete.mockResolvedValueOnce({
+      status: "ok",
+      removed_user_id: "2",
     });
 
     await act(async () => {
@@ -368,12 +354,7 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       // Verify API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/conversation_users/m2",
-        expect.objectContaining({
-          method: "DELETE",
-        })
-      );
+      expect(api.delete).toHaveBeenCalledWith("/api/conversation_users/m2");
       // Verify callback
       expect(mockHandleNotificationChange).toHaveBeenCalledWith("Member removed");
       expect(mockHandleMemberRemoved).toHaveBeenCalledWith("2");
@@ -381,13 +362,10 @@ describe("Conversation Component", () => {
   });
 
   it("calls handleConversationDeleted when removing last member", async () => {
-    // Mock the fetch response for removing the last member (conversation deleted)
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "ok",
-          conversation_deleted: true,
-        }),
+    // Mock the API response for removing the last member (conversation deleted)
+    api.delete.mockResolvedValueOnce({
+      status: "ok",
+      conversation_deleted: true,
     });
 
     // Create a conversation with only one member (the current user)
@@ -434,12 +412,9 @@ describe("Conversation Component", () => {
   });
 
   it("calls handleLeaveConversation when leave button is clicked", async () => {
-    // Mock the fetch response for leaving conversation
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "ok",
-        }),
+    // Mock the API response for leaving conversation
+    api.delete.mockResolvedValueOnce({
+      status: "ok",
     });
 
     await act(async () => {
@@ -472,12 +447,7 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       // Verify API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/conversation_users/m1",
-        expect.objectContaining({
-          method: "DELETE",
-        })
-      );
+      expect(api.delete).toHaveBeenCalledWith("/api/conversation_users/m1");
       // Verify callback
       expect(mockHandleConversationDeleted).toHaveBeenCalledWith("1");
     });
@@ -516,22 +486,19 @@ describe("Conversation Component", () => {
     fireEvent.click(removeButton);
 
     // Verify no API call was made
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(api.delete).not.toHaveBeenCalled();
   });
 
   it("sends a message successfully", async () => {
-    // Mock the fetch response for sending a message
-    global.fetch.mockResolvedValueOnce({
-      json: () =>
-        Promise.resolve({
-          status: "created",
-          message: {
-            id: "3",
-            body: "Test message",
-            user_id: "1",
-            conversation_id: "1",
-          },
-        }),
+    // Mock the API response for sending a message
+    api.post.mockResolvedValueOnce({
+      status: "created",
+      message: {
+        id: "3",
+        body: "Test message",
+        user_id: "1",
+        conversation_id: "1",
+      },
     });
 
     await act(async () => {
@@ -554,12 +521,7 @@ describe("Conversation Component", () => {
 
     await waitFor(() => {
       // Verify API call
-      expect(global.fetch).toHaveBeenCalledWith(
-        "http://localhost:3000/api/messages",
-        expect.objectContaining({
-          method: "POST",
-        })
-      );
+      expect(api.post).toHaveBeenCalledWith("/api/messages", expect.any(Object));
       // Verify callback
       expect(mockHandleNotificationChange).toHaveBeenCalledWith("Message successfully sent.");
       expect(mockHandleMessageSent).toHaveBeenCalledWith({
@@ -572,8 +534,8 @@ describe("Conversation Component", () => {
   });
 
   it("shows error notification when send message fails", async () => {
-    // Mock the fetch response to throw an error
-    global.fetch.mockRejectedValueOnce(new Error("Network error"));
+    // Mock the API response to throw an error
+    api.post.mockRejectedValueOnce(new Error("Network error"));
 
     await act(async () => {
       renderConversation(defaultContextValue, {
@@ -599,15 +561,9 @@ describe("Conversation Component", () => {
   });
 
   it("shows removing/loading state when removing a member", async () => {
-    // Mock a slow fetch response
-    global.fetch.mockImplementation(() =>
-      new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            json: () => Promise.resolve({ status: "ok", removed_user_id: "2" }),
-          });
-        }, 100);
-      })
+    // Mock a slow API response
+    api.delete.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ status: "ok", removed_user_id: "2" }), 100))
     );
 
     await act(async () => {
@@ -643,15 +599,9 @@ describe("Conversation Component", () => {
   });
 
   it("shows leaving/loading state when leaving conversation", async () => {
-    // Mock a slow fetch response
-    global.fetch.mockImplementation(() =>
-      new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            json: () => Promise.resolve({ status: "ok" }),
-          });
-        }, 100);
-      })
+    // Mock a slow API response
+    api.delete.mockImplementation(
+      () => new Promise((resolve) => setTimeout(() => resolve({ status: "ok" }), 100))
     );
 
     await act(async () => {

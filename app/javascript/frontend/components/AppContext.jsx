@@ -5,5 +5,4 @@ export const AppContext = createContext({
   handleSuccessfulAuth: () => {},
   handleSuccessfulLogOut: () => {},
   user: {},
-  url: "",
 });

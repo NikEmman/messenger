@@ -10,9 +10,9 @@ import { BrowserRouter } from "react-router-dom";
 import "@testing-library/jest-dom";
 import Messages from "../components/Messages";
 import { AppContext } from "../components/AppContext";
+import { api } from "../api";
 
-// Mock fetch
-global.fetch = jest.fn();
+jest.mock("../api");
 
 // Helper function to render Messages with required providers
 const renderMessages = (contextValue) => {
@@ -40,11 +40,7 @@ describe("Messages Component", () => {
       { id: "1", topic: "Project Discussion", messages: [], members: [] },
     ];
 
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ conversations: mockConversations }),
-      })
-    );
+    api.get.mockResolvedValueOnce({ conversations: mockConversations });
 
     await act(async () => {
       renderMessages(defaultContextValue);
@@ -56,11 +52,7 @@ describe("Messages Component", () => {
   });
 
   it("shows no conversations message when there are no conversations", async () => {
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ conversations: [] }),
-      })
-    );
+    api.get.mockResolvedValueOnce({ conversations: [] });
 
     await act(async () => {
       renderMessages(defaultContextValue);
@@ -70,11 +62,7 @@ describe("Messages Component", () => {
   });
 
   it("shows the select conversation message when no conversation is selected", async () => {
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ conversations: [] }),
-      })
-    );
+    api.get.mockResolvedValueOnce({ conversations: [] });
 
     await act(async () => {
       renderMessages(defaultContextValue);
@@ -88,13 +76,8 @@ describe("Messages Component", () => {
       { id: "1", topic: "Project Discussion", messages: [], members: [] },
     ];
 
-    global.fetch
-      .mockImplementationOnce(() =>
-        Promise.resolve({
-          json: () => Promise.resolve({ conversations: mockConversations }),
-        })
-      )
-      .mockImplementationOnce(() => Promise.resolve({ ok: true }));
+    api.get.mockResolvedValueOnce({ conversations: mockConversations });
+    api.delete.mockResolvedValueOnce(null);
 
     await act(async () => {
       renderMessages(defaultContextValue);
@@ -119,11 +102,7 @@ describe("Messages Component", () => {
       loggedInStatus: "NOT_LOGGED_IN",
     };
 
-    global.fetch.mockImplementationOnce(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ conversations: [] }),
-      })
-    );
+    api.get.mockResolvedValueOnce({ conversations: [] });
 
     await act(async () => {
       renderMessages(notLoggedInContext);

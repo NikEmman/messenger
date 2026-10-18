@@ -2,22 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import { AppContext } from "./components/AppContext";
-import { config } from "./Constants";
+import { api } from "./api";
 
 export default function App() {
-  const URL = config.url;
   const [user, setUser] = useState({});
   const [loggedInStatus, setLoggedInStatus] = useState("NOT_LOGGED_IN");
   useEffect(() => {
     if (loggedInStatus === "NOT_LOGGED_IN") {
-      fetch(`${URL}/api/logged_in`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.logged_in) {
-            setUser(data.user);
-            setLoggedInStatus("LOGGED_IN");
-          }
-        });
+      api.get("/api/logged_in").then((data) => {
+        if (data.logged_in) {
+          setUser(data.user);
+          setLoggedInStatus("LOGGED_IN");
+        }
+      });
     }
   }, [loggedInStatus]);
 
@@ -40,7 +37,6 @@ export default function App() {
           handleSuccessfulAuth: handleSuccessfulAuth,
           handleSuccessfulLogOut: handleSuccessfulLogOut,
           user: user,
-          url: URL,
         }}
       >
         <Navbar />

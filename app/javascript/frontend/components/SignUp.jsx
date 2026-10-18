@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import "../styles/Profile.css";
 import { AppContext } from "./AppContext";
+import { api } from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
@@ -12,7 +13,7 @@ export default function SignUp() {
   });
   const [formErrors, setFormErrors] = useState({});
   const [registrationErrors, setRegistrationErrors] = useState("");
-  const { handleSuccessfulAuth, url } = useContext(AppContext);
+  const { handleSuccessfulAuth } = useContext(AppContext);
   const navigate = useNavigate();
   const messagesRouter = () => navigate("/messages");
 
@@ -31,27 +32,11 @@ export default function SignUp() {
     setFormErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      fetch(`${url}/api/registrations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-        mode: "cors",
-      })
-        .then((response) => {
-          if (!response.ok) {
-            return response.json().then((data) => {
-              console.log(data);
-              throw new Error(data.errors[0]);
-            });
-          }
-          return response.json();
-        })
+      api
+        .post("/api/registrations", data)
         .then((data) => {
-          if (data.status === "created") {
-            handleSuccessfulAuth(data.user);
-            messagesRouter();
-          }
+          handleSuccessfulAuth(data.user);
+          messagesRouter();
         })
         .catch((error) => {
           setRegistrationErrors(error.message);

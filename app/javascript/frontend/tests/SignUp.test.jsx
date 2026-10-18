@@ -4,6 +4,9 @@ import { BrowserRouter as Router } from "react-router-dom";
 import "@testing-library/jest-dom";
 import SignUp from "../components/SignUp";
 import { AppContext } from "../components/AppContext";
+import { api, ApiError } from "../api";
+
+jest.mock("../api");
 
 describe("SignUp Component", () => {
   const mockHandleSuccessfulAuth = jest.fn();
@@ -24,7 +27,6 @@ describe("SignUp Component", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    global.fetch = jest.fn();
   });
 
   test("renders sign up form with empty values", () => {
@@ -83,10 +85,9 @@ describe("SignUp Component", () => {
   });
 
   test("displays registration error message", async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: false,
-      json: () => Promise.resolve({ errors: ["Email has already been taken"] }),
-    });
+    api.post.mockRejectedValueOnce(
+      new ApiError(422, { errors: ["Email has already been taken"] })
+    );
 
     renderWithRouter(<SignUp />);
 
@@ -120,14 +121,7 @@ describe("SignUp Component", () => {
   });
 
   test("submits form data correctly", async () => {
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          status: "created",
-          user: { email: "test@example.com" },
-        }),
-    });
+    api.post.mockResolvedValueOnce({ user: { email: "test@example.com" } });
 
     renderWithRouter(<SignUp />);
 

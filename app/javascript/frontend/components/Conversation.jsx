@@ -1,9 +1,9 @@
-import React, { useState, useContext, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../styles/Conversation.css";
 import ReactQuill from "react-quill";
 import { Link } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
-import { AppContext } from "./AppContext";
+import { api } from "../api";
 
 function formatTime(timestamp) {
   if (!timestamp) return "";
@@ -43,7 +43,6 @@ export default function Conversation({
   const [removingId, setRemovingId] = useState(null);
   const dialogRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const { url } = useContext(AppContext);
 
   // Auto-scroll to bottom whenever messages change
   useEffect(() => {
@@ -87,11 +86,10 @@ export default function Conversation({
   const onAddUserClick = () => {
     handleNotificationChange("");
     setShowUserList(true);
-    fetch(`${url}/api/other_users`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.status === "ok") setUserList(data.users);
-      });
+    api
+      .get("/api/other_users")
+      .then((data) => setUserList(data.users))
+      .catch(() => handleNotificationChange("Failed to load users"));
   };
 
   const openMembersModal = () => {
@@ -111,19 +109,11 @@ export default function Conversation({
       conversation_id: conversation.id,
     };
 
-    fetch(`${url}/api/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: newMessage }),
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .post("/api/messages", { message: newMessage })
       .then((data) => {
-        if (data.status === "created") {
-          handleNotificationChange("Message successfully sent.");
-          handleMessageSent(data.message);
-        }
+        handleNotificationChange("Message successfully sent.");
+        handleMessageSent(data.message);
       })
       .catch(() => handleNotificationChange("Failed to send message"));
 
@@ -151,36 +141,23 @@ export default function Conversation({
 
   const handleAddUser = () => {
     const memberData = { conversation_id: conversation.id, user_id: selection };
-    fetch(`${url}/api/conversation_users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(memberData),
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .post("/api/conversation_users", memberData)
       .then((data) => {
-        if (data.status === "created") {
-          handleNotificationChange("Added member");
-          handleMemberAdded(data.member);
-          setUserList(userList.filter((u) => u.id !== selection));
-          setShowUserList(false);
-        }
+        handleNotificationChange("Added member");
+        handleMemberAdded(data.member);
+        setUserList(userList.filter((u) => u.id !== selection));
+        setShowUserList(false);
       })
-      .catch((error) => console.error("Error adding member:", error));
+      .catch(() => handleNotificationChange("Failed to add member"));
   };
 
   const handleRemoveMember = (membershipId, memberName) => {
     if (!window.confirm(`Remove ${memberName} from this conversation?`)) return;
     setRemovingId(membershipId);
 
-    fetch(`${url}/api/conversation_users/${membershipId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .delete(`/api/conversation_users/${membershipId}`)
       .then((data) => {
         if (data.conversation_deleted) {
           handleNotificationChange("Conversation deleted (no members remaining)");
@@ -205,13 +182,8 @@ export default function Conversation({
 
     setRemovingId(currentUserMembership.membership_id);
 
-    fetch(`${url}/api/conversation_users/${currentUserMembership.membership_id}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      mode: "cors",
-    })
-      .then((response) => response.json())
+    api
+      .delete(`/api/conversation_users/${currentUserMembership.membership_id}`)
       .then(() => {
         handleConversationDeleted(conversation.id);
         closeMembersModal();
