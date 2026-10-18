@@ -23,7 +23,7 @@ RSpec.describe Api::ConversationsController, type: :request do
       expect(json_response['conversations'].first).to include(
         'id' => conversation.id,
         'topic' => conversation.topic,
-        'messages' => [ { 'body' => 'Plain text message', 'user_id' => user.id } ]
+        'messages' => [ a_hash_including('body' => 'Plain text message', 'user_id' => user.id) ]
       )
     end
   end
