@@ -136,106 +136,37 @@ puts "✅ Created #{Conversation.count} conversations"
 
 puts "📝 Creating messages..."
 
-# Messages for Justice League conversation
-Message.create!(
-  user: batman,
-  conversation: justice_league_convo,
-  body: "<p>We need to discuss the recent increase in criminal activity across multiple cities. I've been tracking unusual patterns that suggest coordinated attacks.</p>",
-  created_at: 2.hours.ago
-)
+# Each conversation is a script of [author, body] lines sent a few minutes
+# apart, so timestamps always move forward within a thread.
+def seed_messages(conversation, started_minutes_ago, lines)
+  lines.each_with_index do |(user, body), index|
+    Message.create!(user: user, conversation: conversation, body: body,
+                    created_at: (started_minutes_ago - index * 7).minutes.ago)
+  end
+end
 
-Message.create!(
-  user: superman,
-  conversation: justice_league_convo,
-  body: "<p>I've noticed the same thing, Bruce. Metropolis has seen some strange incidents too. We should coordinate our efforts and share intelligence.</p>",
-  created_at: 1.hour.ago
-)
+seed_messages(hero_chat_convo, 300, [
+  [ batman, "<p>Clark, I've been thinking about our approach to crime fighting. We need better coordination between Gotham and Metropolis.</p>" ],
+  [ superman, "<p>You're right, Bruce. Maybe we should set up a secure communication system that can't be intercepted by criminals.</p>" ],
+  [ batman, "<p>I'm already working on something. Encrypted quantum communication with real-time threat analysis. Should be ready next week.</p>" ],
+  [ superman, "<p>Impressive as always. Your tech skills never cease to amaze me. This could revolutionize how we protect our cities.</p>" ],
+  [ batman, "<p>Technology is only as good as the people using it. We need to stay vigilant and keep training. The threats are evolving.</p>" ]
+])
 
-Message.create!(
-  user: batman,
-  conversation: justice_league_convo,
-  body: "<p>Agreed. I'll compile a report from Gotham's incidents and send it over. We need to stay one step ahead of whatever this is.</p>",
-  created_at: 45.minutes.ago
-)
+seed_messages(justice_league_convo, 150, [
+  [ batman, "<p>We need to discuss the recent increase in criminal activity across multiple cities. I've been tracking unusual patterns that suggest coordinated attacks.</p>" ],
+  [ superman, "<p>I've noticed the same thing, Bruce. Metropolis has seen some strange incidents too. We should coordinate our efforts and share intelligence.</p>" ],
+  [ batman, "<p>Agreed. I'll compile a report from Gotham's incidents and send it over. We need to stay one step ahead of whatever this is.</p>" ]
+])
 
-# Messages for Gotham Crisis conversation
-Message.create!(
-  user: batman,
-  conversation: gotham_crisis_convo,
-  body: "<p>Joker has escaped Arkham again. This time he's taken over the old ACE Chemicals plant. GCPD is requesting assistance.</p>",
-  created_at: 3.hours.ago
-)
-
-Message.create!(
-  user: superman,
-  conversation: gotham_crisis_convo,
-  body: "<p>On my way to Gotham now. ETA 5 minutes. What's his play this time?</p>",
-  created_at: 2.hours.ago + 30.minutes
-)
-
-Message.create!(
-  user: joker,
-  conversation: gotham_crisis_convo,
-  body: "<p>HAHAHA! Welcome to my chemical comedy show, boys! 🃏 The punchline is going to be EXPLOSIVE! You'll never catch me this time!</p>",
-  created_at: 2.hours.ago + 15.minutes
-)
-
-Message.create!(
-  user: batman,
-  conversation: gotham_crisis_convo,
-  body: "<p>Joker, whatever you're planning, it ends now. Innocent people could get hurt.</p>",
-  created_at: 2.hours.ago
-)
-
-Message.create!(
-  user: joker,
-  conversation: gotham_crisis_convo,
-  body: "<p>Oh Batsy, you always take things so seriously! Can't a clown have a little fun? The real joke is that you think you can stop me! AHAHAHA!</p>",
-  created_at: 1.hour.ago + 45.minutes
-)
-
-Message.create!(
-  user: superman,
-  conversation: gotham_crisis_convo,
-  body: "<p>The area is secure. No civilians were harmed. Joker is back in custody, but we need to figure out how he keeps escaping.</p>",
-  created_at: 1.hour.ago + 15.minutes
-)
-
-# Messages for Hero Strategy conversation
-Message.create!(
-  user: batman,
-  conversation: hero_chat_convo,
-  body: "<p>Clark, I've been thinking about our approach to crime fighting. We need better coordination between Gotham and Metropolis.</p>",
-  created_at: 5.hours.ago
-)
-
-Message.create!(
-  user: superman,
-  conversation: hero_chat_convo,
-  body: "<p>You're right, Bruce. Maybe we should set up a secure communication system that can't be intercepted by criminals.</p>",
-  created_at: 4.hours.ago + 30.minutes
-)
-
-Message.create!(
-  user: batman,
-  conversation: hero_chat_convo,
-  body: "<p>I'm already working on something. Encrypted quantum communication with real-time threat analysis. Should be ready next week.</p>",
-  created_at: 4.hours.ago
-)
-
-Message.create!(
-  user: superman,
-  conversation: hero_chat_convo,
-  body: "<p>Impressive as always. Your tech skills never cease to amaze me. This could revolutionize how we protect our cities.</p>",
-  created_at: 3.hours.ago + 45.minutes
-)
-
-Message.create!(
-  user: batman,
-  conversation: hero_chat_convo,
-  body: "<p>Technology is only as good as the people using it. We need to stay vigilant and keep training. The threats are evolving.</p>",
-  created_at: 3.hours.ago + 15.minutes
-)
+seed_messages(gotham_crisis_convo, 60, [
+  [ batman, "<p>Joker has escaped Arkham again. This time he's taken over the old ACE Chemicals plant. GCPD is requesting assistance.</p>" ],
+  [ superman, "<p>On my way to Gotham now. ETA 5 minutes. What's his play this time?</p>" ],
+  [ joker, "<p>HAHAHA! Welcome to my chemical comedy show, boys! 🃏 The punchline is going to be EXPLOSIVE! You'll never catch me this time!</p>" ],
+  [ batman, "<p>Joker, whatever you're planning, it ends now. Innocent people could get hurt.</p>" ],
+  [ joker, "<p>Oh Batsy, you always take things so seriously! Can't a clown have a little fun? The real joke is that you think you can stop me! AHAHAHA!</p>" ],
+  [ superman, "<p>The area is secure. No civilians were harmed. Joker is back in custody, but we need to figure out how he keeps escaping.</p>" ]
+])
 
 puts "✅ Created #{Message.count} messages"
 
