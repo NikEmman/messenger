@@ -46,9 +46,10 @@ RSpec.describe Message, type: :model do
       expect(message.body.to_trix_html).to include('<strong>rich text</strong>')
     end
 
-    it "can handle empty content" do
-      message = create(:message)
-      expect(message).to be_valid
+    it "requires a body" do
+      message = build(:message, body: "")
+      expect(message).not_to be_valid
+      expect(message.errors[:body]).to include("can't be blank")
     end
   end
 end

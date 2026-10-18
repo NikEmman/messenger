@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :message do
     association :user
     association :conversation
+    body { "Hello there" }
 
     trait :with_rich_text do
       after(:build) do |message|

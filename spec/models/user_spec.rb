@@ -69,7 +69,7 @@ RSpec.describe User, type: :model do
       expect(user.profile.address).to eq("123 Main St")
     end
 
-    it "can have many conversations through conversation_user" do
+    it "can have many conversations through conversation_users" do
       user = create(:user, :with_conversations)
       expect(user.conversations.count).to eq(2)
     end
