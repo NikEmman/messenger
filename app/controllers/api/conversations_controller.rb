@@ -1,109 +1,53 @@
 module Api
-  class ConversationsController < ApplicationController
-    include CurrentUserConcern
-
+  class ConversationsController < BaseController
     def index
-      if @current_user
-        conversations = @current_user.conversations
-          .includes(
-            messages: :rich_text_body,
-            conversation_users: { user: { profile: { avatar_attachment: :blob } } }
-          )
-          .sort_by { |c| c.messages.map(&:created_at).max || c.created_at }
-          .reverse
-          .map do |conversation|
-          {
-            id: conversation.id,
-            topic: conversation.topic,
-            messages: conversation.messages.order(:created_at).map { |message|
-              { id: message.id, body: message.body.body, user_id: message.user_id, created_at: message.created_at }
-            },
-            members: conversation.conversation_users.map { |cu| member_response(cu) }
-          }
-        end
-      else
-        conversations = []
-      end
+      conversations = @current_user.conversations
+        .includes(
+          messages: :rich_text_body,
+          conversation_users: { user: { profile: { avatar_attachment: :blob } } }
+        )
+        .sort_by { |c| c.messages.map(&:created_at).max || c.created_at }
+        .reverse
 
-      render json: {
-        conversations: conversations
-      }
+      render json: { conversations: conversations.map { |c| conversation_json(c) } }
     end
 
     def create
-      conversation = Conversation.create!(conversation_params)
-      if conversation
-        conversation_user = ConversationUser.create!(user_id: @current_user.id, conversation_id: conversation.id)
-        render json: {
-          status: :created,
-          conversation: {
-            id: conversation.id,
-            topic: conversation.topic,
-            messages: [],
-            members: conversation.conversation_users.map { |cu| member_response(cu) }
-          },
-          message: "Conversation created successfully"
-        }
-      else
-        render json: { status: :unprocessable_entity, errors: conversation.errors.full_messages }
+      conversation = Conversation.transaction do
+        Conversation.create!(conversation_params).tap do |c|
+          c.conversation_users.create!(user: @current_user)
+        end
       end
+
+      render json: { conversation: conversation_json(conversation) }, status: :created
     end
 
     def show
-      conversation = Conversation.includes(
-        messages: :rich_text_body,
-        conversation_users: { user: { profile: { avatar_attachment: :blob } } }
-      ).find_by(id: params[:id])
-      if conversation
-        content = conversation.messages.map { |message| { body: message.body.body, user_id: message.user_id } }
-        render json: {
-          id: conversation.id,
-          messages: content,
-          members: conversation.conversation_users.map { |cu| member_response(cu) }
-        }
-      else
-        render json: { error: "Conversation not found" }, status: :not_found
-      end
+      render json: conversation_json(find_conversation)
     end
 
     def destroy
-      conversation = Conversation.find(params[:id])
-      conversation.destroy
-      render json: { status: 200 }
+      find_conversation.destroy!
+      head :no_content
     end
 
     private
+
+    def find_conversation
+      @current_user.conversations.find(params[:id])
+    end
 
     def conversation_params
       params.require(:conversation).permit(:topic)
     end
 
-    def member_response(conversation_user)
-      user = conversation_user.user
+    def conversation_json(conversation)
       {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar_url: avatar_url(user.profile),
-        membership_id: conversation_user.id
+        id: conversation.id,
+        topic: conversation.topic,
+        messages: conversation.messages.sort_by(&:created_at).map { |m| message_json(m) },
+        members: conversation.conversation_users.map { |cu| member_json(cu) }
       }
-    end
-
-    def user_response(user)
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        avatar_url: avatar_url(user.profile)
-      }
-    end
-
-    def default_avatar_url
-      request.base_url + ActionController::Base.helpers.asset_path("default_avatar.jpg")
-    end
-
-    def avatar_url(profile)
-      profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
     end
   end
 end

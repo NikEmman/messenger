@@ -140,8 +140,7 @@ describe("Conversation Component", () => {
 
   it("calls handleMemberAdded when a user is added", async () => {
     // Mock the API response for fetching users
-    api.get.mockResolvedValueOnce({
-      status: "ok",
+    api.get.mockResolvedValue({
       users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
     });
 
@@ -169,7 +168,6 @@ describe("Conversation Component", () => {
 
     // Mock the API response for adding a user
     api.post.mockResolvedValueOnce({
-      status: "created",
       member: {
         id: "3",
         name: "Charlie",
@@ -177,10 +175,8 @@ describe("Conversation Component", () => {
       },
     });
 
-    // Search for a user and select from dropdown
-    fireEvent.change(screen.getByPlaceholderText("Search users"), {
-      target: { value: "charlie@example.com" },
-    });
+    // Wait for the debounced search results, then select from dropdown
+    await screen.findByText("Charlie");
     fireEvent.change(screen.getByRole("listbox"), { target: { value: "3" } });
 
     // Click "Add" button to add the user
@@ -209,10 +205,34 @@ describe("Conversation Component", () => {
     });
   });
 
+  it("searches users on the server as you type", async () => {
+    api.get.mockResolvedValue({ users: [] });
+
+    await act(async () => {
+      renderConversation(defaultContextValue, {
+        conversation: mockConversation,
+        user: mockUser,
+        handleNotificationChange: mockHandleNotificationChange,
+        handleMessageSent: mockHandleMessageSent,
+        handleMemberAdded: mockHandleMemberAdded,
+        handleMemberRemoved: mockHandleMemberRemoved,
+        handleConversationDeleted: mockHandleConversationDeleted,
+      });
+    });
+
+    fireEvent.click(screen.getByText("Add user"));
+    fireEvent.change(screen.getByPlaceholderText("Search users"), {
+      target: { value: "char lie" },
+    });
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith("/api/users?q=char%20lie");
+    });
+  });
+
   it("closes user selection when cancel is clicked", async () => {
     // Mock the API response for fetching users
-    api.get.mockResolvedValueOnce({
-      status: "ok",
+    api.get.mockResolvedValue({
       users: [{ id: "3", name: "Charlie", email: "charlie@example.com" }],
     });
 

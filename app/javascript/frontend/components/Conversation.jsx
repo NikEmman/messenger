@@ -44,6 +44,19 @@ export default function Conversation({
   const dialogRef = useRef(null);
   const messagesEndRef = useRef(null);
 
+  // Search users (debounced) while the "Add user" picker is open
+  useEffect(() => {
+    if (!showUserList) return;
+    const timer = setTimeout(() => {
+      const query = searchText.trim();
+      api
+        .get(`/api/users${query ? `?q=${encodeURIComponent(query)}` : ""}`)
+        .then((data) => setUserList(data.users))
+        .catch(() => handleNotificationChange("Failed to load users"));
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchText, showUserList]);
+
   // Auto-scroll to bottom whenever messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ behavior: "smooth" });
@@ -86,10 +99,6 @@ export default function Conversation({
   const onAddUserClick = () => {
     handleNotificationChange("");
     setShowUserList(true);
-    api
-      .get("/api/other_users")
-      .then((data) => setUserList(data.users))
-      .catch(() => handleNotificationChange("Failed to load users"));
   };
 
   const openMembersModal = () => {
@@ -104,7 +113,6 @@ export default function Conversation({
     if (isEditorEmpty(message)) return;
 
     const newMessage = {
-      user_id: user.id,
       body: message,
       conversation_id: conversation.id,
     };
@@ -128,11 +136,7 @@ export default function Conversation({
   };
 
   const filteredUsers = userList
-    .filter(
-      (u) =>
-        u.email?.includes(searchText) &&
-        !conversation.members.some((member) => member.email === u.email)
-    )
+    .filter((u) => !conversation.members.some((member) => member.id === u.id))
     .map((u) => (
       <option key={u.id} value={u.id}>
         {u.name || u.email}

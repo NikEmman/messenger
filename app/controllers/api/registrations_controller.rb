@@ -1,13 +1,11 @@
 module Api
-  class RegistrationsController < ApplicationController
+  class RegistrationsController < BaseController
+    skip_before_action :require_login
+
     def create
-      user = User.create(user_params)
-      if user.persisted?
-        session[:user_id] = user.id
-        render json: { status: :created, user: user }, status: :created
-      else
-        render json: { status: :unprocessable_entity, errors: user.errors.full_messages }, status: :unprocessable_entity
-      end
+      user = User.create!(user_params)
+      log_in(user)
+      render json: { user: user_json(user) }, status: :created
     end
 
     private

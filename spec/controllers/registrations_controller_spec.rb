@@ -11,38 +11,30 @@ RSpec.describe 'Api::Registrations', type: :request do
     end
 
     context 'with valid parameters' do
-      it 'creates a new user' do
+      it 'creates a new user and logs them in' do
         expect {
           post '/api/registrations', params: { user: valid_attributes }
         }.to change(User, :count).by(1)
-      end
 
-      it 'responds with status :created' do
-        post '/api/registrations', params: { user: valid_attributes }
         expect(response).to have_http_status(:created)
+        expect(session[:user_id]).to eq(User.last.id)
       end
 
-      it 'sets the session user_id' do
+      it 'never exposes the password digest' do
         post '/api/registrations', params: { user: valid_attributes }
-        expect(session[:user_id]).to eq(User.last.id)
+
+        expect(json_response['user']).not_to have_key('password_digest')
       end
     end
 
     context 'with invalid parameters' do
-      it 'does not create a new user' do
+      it 'does not create a user and returns the errors' do
         expect {
           post '/api/registrations', params: { user: invalid_attributes }
         }.not_to change(User, :count)
-      end
 
-      it 'responds with status :unprocessable_entity' do
-        post '/api/registrations', params: { user: invalid_attributes }
         expect(response).to have_http_status(:unprocessable_entity)
-      end
-
-      it 'returns error messages' do
-        post '/api/registrations', params: { user: invalid_attributes }
-        expect(JSON.parse(response.body)['errors']).to include("Password confirmation doesn't match Password")
+        expect(json_response['errors']).to include("Password confirmation doesn't match Password")
       end
     end
   end

@@ -34,7 +34,6 @@ export default function Profile() {
   const handleCreateProfile = (data) => {
     const formData = new FormData();
 
-    formData.append("profile[user_id]", user.id);
     formData.append("profile[address]", data.address);
     formData.append("profile[birthday]", data.birthday);
 

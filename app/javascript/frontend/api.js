@@ -11,8 +11,8 @@ export class ApiError extends Error {
   }
 }
 
-function csrfToken() {
-  return document.querySelector('meta[name="csrf-token"]')?.content;
+function csrfMeta() {
+  return document.querySelector('meta[name="csrf-token"]');
 }
 
 async function request(path, { method = "GET", json, form } = {}) {
@@ -20,7 +20,7 @@ async function request(path, { method = "GET", json, form } = {}) {
   let body;
 
   if (method !== "GET") {
-    const token = csrfToken();
+    const token = csrfMeta()?.content;
     if (token) headers["X-CSRF-Token"] = token;
   }
 
@@ -38,6 +38,10 @@ async function request(path, { method = "GET", json, form } = {}) {
     body,
     credentials: "same-origin",
   });
+
+  // The server rotates the token on login/logout; keep the page's copy current.
+  const freshToken = response.headers?.get("X-CSRF-Token");
+  if (freshToken) csrfMeta()?.setAttribute("content", freshToken);
 
   const text = await response.text();
   const data = text ? JSON.parse(text) : null;

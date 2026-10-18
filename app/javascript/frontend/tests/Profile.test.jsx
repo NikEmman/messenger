@@ -172,7 +172,7 @@ describe("Profile Component", () => {
     global.FormData = originalFormData;
 
     // Verify FormData creation and properties
-    expect(mockAppendMethod).toHaveBeenCalledWith("profile[user_id]", 1);
+    expect(mockAppendMethod).not.toHaveBeenCalledWith("profile[user_id]", expect.anything());
     expect(mockAppendMethod).toHaveBeenCalledWith(
       "profile[address]",
       "123 Test St"

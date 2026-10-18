@@ -1,7 +1,7 @@
 module Api
-  class SessionsController < ApplicationController
-    include CurrentUserConcern
-    # Since the app is hosted on a servcie that sleeps after a period of inactivity,
+  class SessionsController < BaseController
+    skip_before_action :require_login, only: [ :create, :logged_in, :logout ]
+    # Since the app is hosted on a service that sleeps after a period of inactivity,
     # we will enqueue a job to clean up old messages (older than one week) after
     # a successful login, but only if there are any messages older than one week.
     # This ensures that the cleanup job is only enqueued when necessary and helps
@@ -13,49 +13,35 @@ module Api
       user = User.find_by(email: session_params[:email])&.authenticate(session_params[:password])
 
       if user
-        session[:user_id] = user.id
-        render json: {
-          status: :created,
-          logged_in: true,
-          user: user
-        }, status: :created
+        log_in(user)
+        render json: { user: user_json(user) }, status: :created
       else
-        render json: {
-          status: 401,
-          logged_in: false
-        }, status: :unauthorized
+        render json: { error: "Wrong email or password" }, status: :unauthorized
       end
     end
 
     def logged_in
-        if @current_user
-          render json: {
-            logged_in: true,
-            user: @current_user
-          }
-        else
-          render json: { logged_in: false }
-        end
+      if @current_user
+        render json: { logged_in: true, user: user_json(@current_user) }
+      else
+        render json: { logged_in: false }
+      end
     end
 
     def logout
-        reset_session
-        render json: { status: 200, logged_out: true }
-    end
-
-    def other_users
-        users = User.where.not(id: @current_user&.id)
-        render json: { status: :ok, users: users }
+      reset_session
+      head :no_content
     end
 
     private
 
     def session_params
-        params.require(:user).permit(:email, :password)
+      params.require(:user).permit(:email, :password)
     end
-    def maybe_enqueue_cleanup
-      return unless Message.where("created_at < ?", 1.week.ago).where.not(id: 1..14).exists?
 
+    def maybe_enqueue_cleanup
+      return unless response.successful?
+      return unless Message.where("created_at < ?", 1.week.ago).where.not(id: 1..14).exists?
 
       if Rails.env.production?
         CleanupOldMessagesJob.perform_later

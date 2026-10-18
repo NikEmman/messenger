@@ -24,11 +24,9 @@ export default function Navbar() {
   }, [darkMode]);
 
   const handleLogOut = () => {
-    api.delete("/api/logout").then((data) => {
-      if (data.logged_out) {
-        handleSuccessfulLogOut();
-        navigate("/");
-      }
+    api.delete("/api/logout").then(() => {
+      handleSuccessfulLogOut();
+      navigate("/");
     });
   };
 

@@ -78,7 +78,7 @@ describe("Navbar Component", () => {
 
   test("handles logout successfully", async () => {
     // Mock successful logout response
-    api.delete.mockResolvedValueOnce({ logged_out: true });
+    api.delete.mockResolvedValueOnce(null);
 
     const mockHandleSuccessfulLogOut = jest.fn();
     renderNavbar({

@@ -1,45 +1,30 @@
 module Api
-  class ProfilesController < ApplicationController
+  class ProfilesController < BaseController
     def create
-      @profile = Profile.new(profile_params)
-      if @profile.save
-        render json: { profile: profile_response(@profile) }, status: :created
-      else
-        render json: { errors: @profile.errors.full_messages }, status: :unprocessable_entity
-      end
+      profile = Profile.new(profile_params.merge(user: @current_user))
+      profile.save!
+      render json: { profile: profile_json(profile) }, status: :created
     end
 
     def update
-      profile = Profile.find(params[:id])
-      if profile.update(profile_params)
-        render json: {
-          status: :updated,
-          profile: profile_response(profile)
-        }
-      else
-        render json: {
-          status: :unprocessable_entity,
-          errors: profile.errors.full_messages
-        }, status: :unprocessable_entity
-      end
+      profile = Profile.where(user: @current_user).find(params[:id])
+      profile.update!(profile_params)
+      render json: { profile: profile_json(profile) }
     end
 
+    # GET /api/profiles/:user_id
     def show
-      profile = Profile.includes(:user).find_by(user_id: params[:id])
-      if profile
-        render json: profile_response(profile)
-      else
-        render json: { status: :not_found }, status: :not_found
-      end
+      profile = Profile.includes(:user).find_by!(user_id: params[:id])
+      render json: profile_json(profile)
     end
 
     private
 
     def profile_params
-      params.require(:profile).permit(:user_id, :address, :birthday, :avatar)
+      params.require(:profile).permit(:address, :birthday, :avatar)
     end
 
-    def profile_response(profile)
+    def profile_json(profile)
       {
         id: profile.id,
         user_id: profile.user_id,
@@ -48,14 +33,6 @@ module Api
         birthday: profile.birthday,
         avatar_url: avatar_url(profile)
       }
-    end
-
-    def default_avatar_url
-      request.base_url + ActionController::Base.helpers.asset_path("default_avatar.jpg")
-    end
-
-    def avatar_url(profile)
-      profile&.avatar&.attached? ? url_for(profile.avatar) : default_avatar_url
     end
   end
 end

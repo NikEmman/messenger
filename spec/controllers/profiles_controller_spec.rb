@@ -2,11 +2,20 @@ require 'rails_helper'
 
 RSpec.describe Api::ProfilesController, type: :request do
   let(:user) { create(:user) }
-  let(:profile_attributes) { attributes_for(:profile, user_id: user.id) }
+  let(:other_user) { create(:user) }
+  let(:profile_attributes) { attributes_for(:profile) }
 
-  describe 'POST /api/profiles' do
-    context 'with valid attributes' do
-      it 'creates a profile' do
+  it 'requires login' do
+    get "/api/profiles/#{user.id}"
+
+    expect(response).to have_http_status(:unauthorized)
+  end
+
+  context 'when logged in' do
+    before { login_user(user) }
+
+    describe 'POST /api/profiles' do
+      it "creates the current user's profile" do
         expect {
           post '/api/profiles', params: { profile: profile_attributes }
         }.to change(Profile, :count).by(1)
@@ -20,95 +29,79 @@ RSpec.describe Api::ProfilesController, type: :request do
       it 'creates a profile with avatar' do
         file = fixture_file_upload('spec/fixtures/files/test_avatar.jpg', 'image/jpeg')
 
-        post '/api/profiles', params: {
-          profile: profile_attributes.merge(avatar: file)
-        }
+        post '/api/profiles', params: { profile: profile_attributes.merge(avatar: file) }
 
         expect(response).to have_http_status(:created)
-        expect(json_response['profile']['avatar_url']).to be_present
+        expect(json_response['profile']['avatar_url']).not_to eq(default_avatar_url)
       end
-    end
 
-    context 'with invalid attributes' do
-      it 'returns error messages' do
-        post '/api/profiles', params: { profile: { user_id: nil } }
+      it 'ignores a spoofed user_id' do
+        post '/api/profiles', params: { profile: profile_attributes.merge(user_id: other_user.id) }
+
+        expect(Profile.last.user).to eq(user)
+      end
+
+      it 'rejects a second profile' do
+        create(:profile, user: user)
+
+        post '/api/profiles', params: { profile: profile_attributes }
 
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['errors']).to be_present
       end
     end
-  end
 
-  describe 'PUT /api/profiles/:id' do
-    let!(:profile) { create(:profile, user: user) }
-    let(:new_address) { '123 New Street' }
+    describe 'PUT /api/profiles/:id' do
+      let!(:profile) { create(:profile, user: user) }
 
-    context 'with valid attributes' do
       it 'updates the profile' do
-        put "/api/profiles/#{profile.id}", params: {
-          profile: { address: new_address }
-        }
+        put "/api/profiles/#{profile.id}", params: { profile: { address: '123 New Street' } }
 
         expect(response).to have_http_status(:ok)
-        expect(json_response['profile']['address']).to eq(new_address)
+        expect(json_response['profile']['address']).to eq('123 New Street')
       end
 
       it 'updates avatar' do
         file = fixture_file_upload('spec/fixtures/files/test_avatar.jpg', 'image/jpeg')
 
-        put "/api/profiles/#{profile.id}", params: {
-          profile: { avatar: file }
-        }
+        put "/api/profiles/#{profile.id}", params: { profile: { avatar: file } }
 
         expect(response).to have_http_status(:ok)
         expect(json_response['profile']['avatar_url']).not_to eq(default_avatar_url)
       end
-    end
 
-    context 'with invalid attributes' do
-      it 'returns error messages' do
-        put "/api/profiles/#{profile.id}", params: {
-          profile: { user_id: nil }
-        }
+      it "cannot update someone else's profile" do
+        others_profile = create(:profile, user: other_user)
 
-        expect(response).to have_http_status(:unprocessable_entity)
-        expect(json_response['errors']).to be_present
+        put "/api/profiles/#{others_profile.id}", params: { profile: { address: 'Hacked' } }
+
+        expect(response).to have_http_status(:not_found)
+        expect(others_profile.reload.address).not_to eq('Hacked')
       end
     end
-  end
 
-  describe 'GET /api/profiles/:id' do
-    context 'when profile exists' do
-      let!(:profile) { create(:profile, user: user) }
-
+    describe 'GET /api/profiles/:user_id' do
       it 'returns the profile' do
-        get "/api/profiles/#{user.id}"
+        profile = create(:profile, user: other_user)
+
+        get "/api/profiles/#{other_user.id}"
 
         expect(response).to have_http_status(:ok)
         expect(json_response['id']).to eq(profile.id)
-        expect(json_response['user_id']).to eq(user.id)
-        expect(json_response['name']).to eq(user.name)
+        expect(json_response['name']).to eq(other_user.name)
       end
-    end
 
-    context 'when profile does not exist' do
-      it 'returns not found status' do
-        get "/api/profiles/0"
+      it 'returns not found when the user has no profile' do
+        get '/api/profiles/0'
 
         expect(response).to have_http_status(:not_found)
       end
     end
   end
 
-
-
   private
 
-  def json_response
-    JSON.parse(response.body)
-  end
-
   def default_avatar_url
-    "http://localhost:3000" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
+    "http://www.example.com" + ActionController::Base.helpers.asset_path("default_avatar.jpg")
   end
 end

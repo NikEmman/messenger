@@ -1,9 +1,10 @@
 import { api, ApiError } from "../api";
 
-const mockResponse = (data, { status = 200 } = {}) =>
+const mockResponse = (data, { status = 200, headers = {} } = {}) =>
   Promise.resolve({
     ok: status >= 200 && status < 300,
     status,
+    headers: { get: (name) => headers[name] ?? null },
     text: () => Promise.resolve(data === null ? "" : JSON.stringify(data)),
   });
 
@@ -46,6 +47,16 @@ describe("api", () => {
     expect(options.method).toBe("PUT");
     expect(options.body).toBe(form);
     expect(options.headers["Content-Type"]).toBeUndefined();
+  });
+
+  test("stores a rotated CSRF token from the response", async () => {
+    global.fetch.mockReturnValueOnce(
+      mockResponse({ user: {} }, { headers: { "X-CSRF-Token": "fresh456" } })
+    );
+
+    await api.post("/api/sessions", {});
+
+    expect(document.querySelector('meta[name="csrf-token"]').content).toBe("fresh456");
   });
 
   test("empty responses resolve to null", async () => {

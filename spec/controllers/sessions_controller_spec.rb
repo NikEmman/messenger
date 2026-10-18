@@ -10,78 +10,72 @@ RSpec.describe 'Api::Sessions', type: :request do
       post '/api/sessions', params: valid_params
 
       expect(response).to have_http_status(:created)
-      expect(json_response['logged_in']).to be true
       expect(json_response['user']['email']).to eq(user.email)
+    end
+
+    it 'never exposes the password digest' do
+      post '/api/sessions', params: valid_params
+
+      expect(json_response['user'].keys).to contain_exactly('id', 'name', 'email', 'avatar_url')
     end
 
     it 'rejects invalid credentials' do
       post '/api/sessions', params: invalid_params
 
-      expect(response).to have_http_status(401)
-      expect(json_response['logged_in']).to be false
+      expect(response).to have_http_status(:unauthorized)
+      expect(json_response['error']).to eq('Wrong email or password')
+    end
+
+    it 'returns a fresh CSRF token' do
+      post '/api/sessions', params: valid_params
+
+      expect(response.headers['X-CSRF-Token']).to be_present
     end
   end
 
   describe 'GET /api/logged_in' do
-    context 'when user is logged in' do
-      before do
-        post '/api/sessions', params: valid_params
-      end
+    it 'returns the user when logged in' do
+      post '/api/sessions', params: valid_params
+      get '/api/logged_in'
 
-      it 'returns logged in status and user info' do
-        get '/api/logged_in'
-
-        expect(response).to have_http_status(:ok)
-        expect(json_response['logged_in']).to be true
-        expect(json_response['user']['email']).to eq(user.email)
-      end
+      expect(response).to have_http_status(:ok)
+      expect(json_response['logged_in']).to be true
+      expect(json_response['user']['email']).to eq(user.email)
     end
 
-    context 'when user is not logged in' do
-      it 'returns logged out status' do
-        get '/api/logged_in'
+    it 'returns logged out status otherwise' do
+      get '/api/logged_in'
 
-        expect(response).to have_http_status(:ok)
-        expect(json_response['logged_in']).to be false
-      end
+      expect(response).to have_http_status(:ok)
+      expect(json_response['logged_in']).to be false
     end
   end
 
   describe 'DELETE /api/logout' do
-    before do
-      post '/api/sessions', params: valid_params
-    end
-
     it 'logs out the user' do
+      post '/api/sessions', params: valid_params
       delete '/api/logout'
 
-      expect(response).to have_http_status(:ok)
-      expect(json_response['logged_out']).to be true
+      expect(response).to have_http_status(:no_content)
 
       get '/api/logged_in'
       expect(json_response['logged_in']).to be false
     end
   end
 
-  describe 'GET /api/other_users' do
-    let!(:other_user) { create(:user) }
+  describe 'CSRF protection' do
+    around do |example|
+      ActionController::Base.allow_forgery_protection = true
+      example.run
+    ensure
+      ActionController::Base.allow_forgery_protection = false
+    end
 
-    before do
+    it 'rejects state-changing requests without a token' do
       post '/api/sessions', params: valid_params
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json_response['error']).to eq('Invalid CSRF token')
     end
-
-    it 'returns list of other users' do
-      get '/api/other_users'
-
-      expect(response).to have_http_status(:ok)
-      expect(json_response['users'].length).to eq(1)
-      expect(json_response['users'].first['id']).to eq(other_user.id)
-    end
-  end
-
-  private
-
-  def json_response
-    JSON.parse(response.body)
   end
 end

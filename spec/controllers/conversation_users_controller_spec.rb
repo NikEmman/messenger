@@ -5,8 +5,34 @@ RSpec.describe Api::ConversationUsersController, type: :request do
   let(:other_user) { create(:user) }
   let(:conversation) { create(:conversation) }
 
-  before do
-    login_user(user)
+  before { login_user(user) }
+
+  describe 'POST /api/conversation_users' do
+    it 'lets a member add another user' do
+      create(:conversation_user, user: user, conversation: conversation)
+
+      post '/api/conversation_users', params: { conversation_id: conversation.id, user_id: other_user.id }
+
+      expect(response).to have_http_status(:created)
+      expect(json_response['member']).to include('id' => other_user.id, 'membership_id' => be_present)
+      expect(json_response['member']).not_to have_key('password_digest')
+    end
+
+    it 'rejects adding someone who is already a member' do
+      create(:conversation_user, user: user, conversation: conversation)
+      create(:conversation_user, user: other_user, conversation: conversation)
+
+      post '/api/conversation_users', params: { conversation_id: conversation.id, user_id: other_user.id }
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'does not let non-members add people' do
+      post '/api/conversation_users', params: { conversation_id: conversation.id, user_id: user.id }
+
+      expect(response).to have_http_status(:not_found)
+      expect(conversation.users).to be_empty
+    end
   end
 
   describe 'DELETE /api/conversation_users/:id' do
@@ -18,53 +44,34 @@ RSpec.describe Api::ConversationUsersController, type: :request do
         delete "/api/conversation_users/#{membership.id}"
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
-        expect(json['message']).to eq('User removed from conversation')
-        expect(json['conversation_deleted']).to eq(false)
+        expect(json_response).to eq('conversation_deleted' => false, 'removed_user_id' => other_user.id)
         expect(ConversationUser.exists?(membership.id)).to be false
       end
 
       it 'deletes the conversation when last user is removed' do
-        # Only user is in the conversation, so removing them deletes the conversation
         membership = create(:conversation_user, user: user, conversation: conversation)
 
         delete "/api/conversation_users/#{membership.id}"
 
         expect(response).to have_http_status(:ok)
-        json = JSON.parse(response.body)
-        expect(json['message']).to eq('User removed and conversation deleted (was empty)')
-        expect(json['conversation_deleted']).to eq(true)
+        expect(json_response['conversation_deleted']).to eq(true)
         expect(Conversation.exists?(conversation.id)).to be false
       end
     end
 
-    context 'when current user is NOT a member of the conversation' do
-      it 'returns forbidden status' do
-        # user is not added to the conversation
-        membership = create(:conversation_user, user: other_user, conversation: conversation)
+    it 'does not let non-members remove people' do
+      membership = create(:conversation_user, user: other_user, conversation: conversation)
 
-        delete "/api/conversation_users/#{membership.id}"
+      delete "/api/conversation_users/#{membership.id}"
 
-        expect(response).to have_http_status(:forbidden)
-        json = JSON.parse(response.body)
-        expect(json['error']).to eq('You must be a member of this conversation to remove members')
-      end
+      expect(response).to have_http_status(:not_found)
+      expect(ConversationUser.exists?(membership.id)).to be true
     end
 
-    context 'when membership does not exist' do
-      it 'returns not found status' do
-        delete '/api/conversation_users/99999'
+    it 'returns not found for unknown memberships' do
+      delete '/api/conversation_users/99999'
 
-        expect(response).to have_http_status(:not_found)
-        json = JSON.parse(response.body)
-        expect(json['error']).to eq('Membership not found')
-      end
+      expect(response).to have_http_status(:not_found)
     end
-  end
-
-  private
-
-  def json_response
-    JSON.parse(response.body)
   end
 end
