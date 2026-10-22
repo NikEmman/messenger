@@ -1,6 +1,6 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins "https://messenger-lr1s.onrender.com"
+    origins "https://messenger.nikemmanouilidis.gr", "https://messenger-lr1s.onrender.com"
 
     resource "*",
       headers: :any,
