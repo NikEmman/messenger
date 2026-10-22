@@ -1,13 +1,10 @@
 module Api
   class SessionsController < BaseController
     skip_before_action :require_login, only: [ :create, :logged_in, :logout ]
-    # Since the app is hosted on a service that sleeps after a period of inactivity,
-    # we will enqueue a job to clean up old messages (older than one week) after
-    # a successful login, but only if there are any messages older than one week.
-    # This ensures that the cleanup job is only enqueued when necessary and helps
-    # keep the database tidy without requiring a separate scheduled task.
-    # The actual deletion of old messages is handled by the CleanupOldMessagesJob.
-    after_action :maybe_enqueue_cleanup, only: [ :create ]
+    # The public demo is reset at most once a day, on the first login after it
+    # is due, rather than on a schedule: hosts like Render sleep when idle.
+    # It runs before authenticating so this login already sees the fresh data.
+    before_action :reset_demo_data_if_due, only: [ :create ]
 
     def create
       user = User.find_by(email: session_params[:email])&.authenticate(session_params[:password])
@@ -39,13 +36,13 @@ module Api
       params.require(:user).permit(:email, :password)
     end
 
-    def maybe_enqueue_cleanup
-      return unless response.successful?
-      return unless Message.expired.exists?
+    def reset_demo_data_if_due
+      return unless Rails.configuration.x.reset_demo_data && ResetDemoDataJob.due?
 
-      if Rails.env.production?
-        CleanupOldMessagesJob.perform_later
-      end
+      ResetDemoDataJob.perform_now
+    rescue ActiveRecord::ActiveRecordError => e
+      # A simultaneous login reset it first; that reset stands.
+      Rails.logger.warn("Demo data reset skipped: #{e.message}")
     end
   end
 end

@@ -33,6 +33,32 @@ RSpec.describe 'Api::Sessions', type: :request do
     end
   end
 
+  describe 'POST /api/sessions demo data reset' do
+    let(:batman) { { user: { email: 'bruce.wayne@wayneenterprises.com', password: 'gotham123' } } }
+
+    before do
+      allow($stdout).to receive(:puts) # the seeds print a summary
+      Rails.configuration.x.reset_demo_data = true
+    end
+
+    after { Rails.configuration.x.reset_demo_data = nil }
+
+    it 'resets to the seeded data when the last reset was over a day ago' do
+      user.update!(created_at: 2.days.ago)
+
+      post '/api/sessions', params: batman
+
+      expect(response).to have_http_status(:created)
+      expect(User.exists?(user.id)).to be false
+      expect(User.count).to eq(3)
+    end
+
+    it 'leaves the data alone when it was reset within the day' do
+      expect { post '/api/sessions', params: valid_params }.not_to change(User, :count)
+      expect(response).to have_http_status(:created)
+    end
+  end
+
   describe 'GET /api/logged_in' do
     it 'returns the user when logged in' do
       post '/api/sessions', params: valid_params
