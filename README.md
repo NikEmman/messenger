@@ -4,7 +4,7 @@
 
 A real-time group chat app built with **Rails 8** and **React**. Messages, typing indicators and presence update live over WebSockets.
 
-**[Try the live demo →](https://messenger-lr1s.onrender.com)**: click a demo account on the sign-in page, no sign-up needed. Open a second (private) window as another hero to watch messages arrive in real time.
+**[Try the live demo →](https://messenger.nikemmanouilidis.gr)** ([backup on Render](https://messenger-lr1s.onrender.com)): click a demo account on the sign-in page, no sign-up needed. Open a second (private) window as another hero to watch messages arrive in real time. The demo resets to its seeded data once a day.
 
 ![Two users chatting in real time](docs/screenshots/live-chat.gif)
 
@@ -57,7 +57,7 @@ flowchart LR
 | Frontend | React 18, React Router 7, Trix, esbuild |
 | Data | PostgreSQL (production), SQLite (development and test) |
 | Testing | RSpec (request, model and channel specs), Jest + Testing Library |
-| CI / deploy | GitHub Actions (RSpec, Jest, RuboCop, Brakeman), Render |
+| CI / deploy | GitHub Actions (RSpec, Jest, RuboCop, Brakeman), Kamal to a home server behind Cloudflare Tunnel, Render as backup |
 
 ## Running locally
 
