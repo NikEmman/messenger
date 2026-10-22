@@ -588,10 +588,6 @@ a.messageAvatar:hover {
   .membersModalContent {
     padding: 1rem;
   }
-
-  .messageBubble {
-    max-width: 80%;
-  }
 }
 
 /* ─── Presence & typing ───────────────────────────────────────────────── */
@@ -658,7 +654,9 @@ a.messageAvatar:hover {
     justify-content: flex-end;
   }
 
+  /* Let bubbles use the full row width (beside the avatar) before wrapping */
   .messageBubbleWrapper {
-    max-width: 80%;
+    max-width: none;
+    min-width: 0;
   }
 }
