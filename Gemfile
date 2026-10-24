@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.0.0"
+gem "rails", "~> 8.0.5"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Use the Puma web server [https://github.com/puma/puma]
@@ -66,3 +66,6 @@ group :development do
 end
 
 gem "active_storage_db", "~> 1.4"
+
+# json 3.x breaks ActionCable broadcasts on Rails 8.0 (unknown keyword: quirks_mode)
+gem "json", "~> 2.19"
