@@ -31,6 +31,16 @@ RSpec.describe 'Api::Accounts', type: :request do
         expect(json_response['error']).to eq('Wrong password')
         expect(User.exists?(user.id)).to be true
       end
+
+      it 'stops accepting passwords after too many attempts' do
+        # The test cache is a null store, so stand in for the attempt count.
+        allow(Api::AccountsController.cache_store).to receive(:increment).and_return(6)
+
+        delete '/api/account', params: { password: 'password123' }
+
+        expect(response).to have_http_status(:too_many_requests)
+        expect(User.exists?(user.id)).to be true
+      end
     end
 
     it 'refuses to delete a demo account' do

@@ -13,6 +13,13 @@ RSpec.describe User, type: :model do
       expect(user.errors[:name]).to include("can't be blank")
     end
 
+    it "rejects a duplicate email at the database too" do
+      user = create(:user)
+      duplicate = build(:user, email: user.email)
+
+      expect { duplicate.save(validate: false) }.to raise_error(ActiveRecord::RecordNotUnique)
+    end
+
     it "is not valid without an email" do
       user = build(:user, email: nil)
       expect(user).not_to be_valid

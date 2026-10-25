@@ -25,6 +25,9 @@ module AccountRemoval
   # Members of the conversations that outlived the accounts see their
   # messages and memberships disappear live.
   def self.broadcast_removal(conversations, user_ids)
+    # { member => { conversation_id => count } }, one query per member.
+    unread_counts = Hash.new { |counts, member| counts[member] = Message.unread_counts_for(member) }
+
     conversations.each do |conversation|
       last_message = conversation.messages.order(:id).last
 
@@ -39,7 +42,7 @@ module AccountRemoval
             preview: last_message.preview,
             created_at: last_message.created_at
           },
-          unread_count: Message.unread_counts_for(member).fetch(conversation.id, 0))
+          unread_count: unread_counts[member].fetch(conversation.id, 0))
       end
     end
   end

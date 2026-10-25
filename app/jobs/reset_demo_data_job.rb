@@ -1,6 +1,9 @@
 class ResetDemoDataJob < ApplicationJob
   queue_as :default
 
+  # A simultaneous reset (e.g. on login) seeded the accounts first; that one stands.
+  discard_on ActiveRecord::RecordNotUnique
+
   IDLE_FOR = 30.minutes
 
   # Compared with true because an unset config.x key is an empty (truthy)
