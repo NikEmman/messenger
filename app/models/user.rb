@@ -7,7 +7,7 @@ class User < ApplicationRecord
   validates_uniqueness_of :email
   validates_presence_of :name
 
-  has_many :messages
+  has_many :messages, dependent: :destroy
   has_many :conversation_users, dependent: :destroy
   has_many :conversations, through: :conversation_users
   has_one :profile, dependent: :destroy
@@ -34,9 +34,12 @@ class User < ApplicationRecord
 
   # Returns true when this was the user's last open connection.
   def disconnect_cable!
-    self.class.where(id: id).update_all(
+    updated = self.class.where(id: id).update_all(
       Arel.sql("cable_connections = CASE WHEN cable_connections > 0 THEN cable_connections - 1 ELSE 0 END")
     )
+    # Nothing to announce if the account was just deleted.
+    return false if updated.zero?
+
     reload
     cable_connections.zero?
   end

@@ -63,6 +63,11 @@ RSpec.describe User, type: :model do
       expect(user.messages.count).to eq(2)
     end
 
+    it "deletes their messages along with them" do
+      user = create(:user, :with_messages)
+      expect { user.destroy! }.to change(Message, :count).by(-2)
+    end
+
     it "can have one profile" do
       user = create(:user, :with_profile)
       expect(user.profile).to be_present
@@ -84,6 +89,15 @@ RSpec.describe User, type: :model do
 
     it "does not authenticate with incorrect password" do
       expect(user.authenticate("wrong_password")).to be_falsey
+    end
+  end
+
+  describe "#disconnect_cable!" do
+    it "returns false once the account is gone" do
+      user = create(:user, cable_connections: 1)
+      User.find(user.id).destroy!
+
+      expect(user.disconnect_cable!).to be false
     end
   end
 end
