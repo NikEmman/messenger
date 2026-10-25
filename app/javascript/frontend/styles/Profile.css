@@ -240,6 +240,64 @@
   background: var(--primary-dark);
 }
 
+/* ─── Delete account ─────────────────────────────────────────────────── */
+.deleteAccount {
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+
+.deleteAccount p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.formPage .deleteAccount form {
+  border-color: rgba(240, 71, 71, 0.35);
+}
+
+.formPage .deleteAccount input {
+  margin-bottom: 1rem;
+}
+
+.deleteAccountActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.formPage .deleteAccount button {
+  flex: 1;
+  width: auto;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  background: var(--bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.formPage .deleteAccount button.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.formPage .deleteAccount button.danger:hover:not(:disabled) {
+  background: var(--danger-light);
+}
+
+.formPage .deleteAccount button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.formPage .deleteAccount > button {
+  margin-top: 1.5rem;
+}
+
 /* ─── Profile form page wrapper ──────────────────────────────────────── */
 .profileFormPage {
   max-width: 500px;

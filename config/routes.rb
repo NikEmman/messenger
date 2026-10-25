@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     resources :profiles, only: [ :create, :show, :update ]
     resources :sessions, only: [ :create ]
     resources :registrations, only: [ :create ]
+    resource :account, only: [ :destroy ]
     delete :logout, to: "sessions#logout"
     get :logged_in, to: "sessions#logged_in"
     resources :conversations, only: [ :index, :show, :destroy, :create ] do

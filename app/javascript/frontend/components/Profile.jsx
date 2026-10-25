@@ -3,6 +3,7 @@ import "../styles/Profile.css";
 import { Navigate, useParams } from "react-router-dom";
 import { AppContext } from "./AppContext";
 import ProfileForm from "./ProfileForm";
+import DeleteAccount from "./DeleteAccount";
 import Spinner from "./Spinner";
 import { api } from "../api";
 
@@ -88,6 +89,7 @@ export default function Profile() {
               onSubmit={handleCreateProfile}
               submitText={"Create"}
             />
+            <DeleteAccount />
           </div>
         ) : (
           <h2>This user has not created a profile yet</h2>
@@ -129,6 +131,7 @@ export default function Profile() {
           )}
         </div>
       </div>
+      {isCurrentUser && <DeleteAccount />}
     </div>
   );
 }
