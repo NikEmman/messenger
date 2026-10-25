@@ -62,7 +62,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Prepare database
-        run: bin/rails db:prepare
+        run: bin/rails db:schema:load
 
       - name: Run Rails specs
         run: bundle exec rspec
