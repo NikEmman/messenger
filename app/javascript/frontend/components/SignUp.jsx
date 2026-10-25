@@ -139,6 +139,10 @@ export default function SignUp() {
         )}
 
         <button type="submit">Sign Up</button>
+        <p className="formNote">
+          Accounts that go unused for 2 weeks are deleted, along with their
+          messages.
+        </p>
       </form>
     </div>
   );
