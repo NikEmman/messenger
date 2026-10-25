@@ -37,24 +37,26 @@ RSpec.describe 'Api::Sessions', type: :request do
     let(:batman) { { user: { email: 'bruce.wayne@wayneenterprises.com', password: 'gotham123' } } }
 
     before do
-      allow($stdout).to receive(:puts) # the seeds print a summary
+      DemoData.seed!
       Rails.configuration.x.reset_demo_data = true
     end
 
     after { Rails.configuration.x.reset_demo_data = nil }
 
-    it 'resets to the seeded data when the last reset was over a day ago' do
-      user.update!(created_at: 2.days.ago)
+    it 'resets the demo accounts when they have been idle since use' do
+      old_batman = User.find_by!(email: 'bruce.wayne@wayneenterprises.com')
+      old_batman.update_columns(created_at: 2.hours.ago, last_seen_at: 1.hour.ago)
 
       post '/api/sessions', params: batman
 
       expect(response).to have_http_status(:created)
-      expect(User.exists?(user.id)).to be false
-      expect(User.count).to eq(3)
+      expect(User.exists?(old_batman.id)).to be false
+      expect(User.exists?(user.id)).to be true
+      expect(json_response['user']['email']).to eq(old_batman.email)
     end
 
-    it 'leaves the data alone when it was reset within the day' do
-      expect { post '/api/sessions', params: valid_params }.not_to change(User, :count)
+    it 'leaves the demo accounts alone when they are not due' do
+      expect { post '/api/sessions', params: batman }.not_to change { User.maximum(:id) }
       expect(response).to have_http_status(:created)
     end
   end

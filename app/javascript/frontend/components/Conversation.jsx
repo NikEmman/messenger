@@ -105,6 +105,8 @@ export default function Conversation({
       if (event.type === "message" && event.message.conversation_id === conversation.id) {
         stopTyping(event.message.user_id);
         setMessages((prev) => mergeMessage(prev, event.message));
+      } else if (event.type === "users_removed" && event.conversation_id === conversation.id) {
+        setMessages((prev) => prev.filter((m) => !event.user_ids.includes(m.user_id)));
       } else if (event.type === "typing" && event.conversation_id === conversation.id) {
         setTypingUsers((prev) => {
           clearTimeout(prev[event.user_id]);

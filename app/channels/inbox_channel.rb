@@ -7,8 +7,12 @@ class InboxChannel < ApplicationCable::Channel
   end
 
   # Only announce "offline" once the user's last tab/window disconnects.
+  # Logging out closes the socket too, so this also covers logouts.
   def unsubscribed
-    Presence.broadcast(current_user, online: false) if current_user.disconnect_cable!
+    return unless current_user.disconnect_cable!
+
+    Presence.broadcast(current_user, online: false)
+    ResetDemoDataJob.schedule if DemoData.account?(current_user)
   end
 
   # Heartbeat from the client (every ~30s) keeps the user marked online.

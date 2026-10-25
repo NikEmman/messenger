@@ -52,7 +52,7 @@ Rails.application.configure do
   # Replace the default in-process and non-durable queuing backend for Active Job.
   config.active_job.queue_adapter = :solid_queue
 
-  # Reset the public demo to its seeded data on the first login each day.
+  # Reset the demo accounts to their seeded data once nobody has used them for 30 minutes.
   config.x.reset_demo_data = true
 
   # Ignore bad email addresses and do not raise email delivery errors.

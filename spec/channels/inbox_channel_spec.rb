@@ -43,6 +43,26 @@ RSpec.describe InboxChannel, type: :channel do
     expect(user.reload).to be_online
   end
 
+  describe 'demo account reset' do
+    before do
+      allow(ResetDemoDataJob).to receive(:schedule)
+      subscribe
+    end
+
+    it 'is scheduled when a demo account disconnects' do
+      user.update_column(:email, DemoData::EMAILS.first)
+      unsubscribe
+
+      expect(ResetDemoDataJob).to have_received(:schedule)
+    end
+
+    it 'is not scheduled for other users' do
+      unsubscribe
+
+      expect(ResetDemoDataJob).not_to have_received(:schedule)
+    end
+  end
+
   it 'does not re-announce a user who is already online in another tab' do
     user.update_columns(cable_connections: 1, last_seen_at: Time.current)
 

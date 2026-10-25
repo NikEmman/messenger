@@ -137,6 +137,21 @@ export default function Messages() {
               )
             );
             break;
+          // The demo accounts were reset: their memberships and messages are gone.
+          case "users_removed":
+            setConversations((prev) =>
+              prev.map((c) =>
+                c.id === event.conversation_id
+                  ? {
+                      ...c,
+                      members: c.members.filter((m) => !event.user_ids.includes(m.id)),
+                      last_message: event.last_message,
+                      unread_count: event.unread_count,
+                    }
+                  : c
+              )
+            );
+            break;
         }
       }),
     [user.id]

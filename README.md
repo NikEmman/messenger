@@ -4,7 +4,7 @@
 
 A real-time group chat app built with **Rails 8** and **React**. Messages, typing indicators and presence update live over WebSockets.
 
-**[Try the live demo →](https://messenger.nikemmanouilidis.gr)** ([backup on Render](https://messenger-lr1s.onrender.com)): click a demo account on the sign-in page, no sign-up needed. Open a second (private) window as another hero to watch messages arrive in real time. The demo resets to its seeded data once a day.
+**[Try the live demo →](https://messenger.nikemmanouilidis.gr)** ([backup on Render](https://messenger-lr1s.onrender.com)): click a demo account on the sign-in page, no sign-up needed. Open a second (private) window as another hero to watch messages arrive in real time. The demo accounts reset to their seeded data 30 minutes after their last visitor leaves.
 
 ![Two users chatting in real time](docs/screenshots/live-chat.gif)
 

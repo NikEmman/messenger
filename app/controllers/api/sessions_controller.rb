@@ -1,8 +1,8 @@
 module Api
   class SessionsController < BaseController
     skip_before_action :require_login, only: [ :create, :logged_in, :logout ]
-    # The public demo is reset at most once a day, on the first login after it
-    # is due, rather than on a schedule: hosts like Render sleep when idle.
+    # The demo accounts are reset once idle (see ResetDemoDataJob). Logins
+    # also check, in case a host like Render slept through the queued job.
     # It runs before authenticating so this login already sees the fresh data.
     before_action :reset_demo_data_if_due, only: [ :create ]
 
@@ -37,7 +37,7 @@ module Api
     end
 
     def reset_demo_data_if_due
-      return unless Rails.configuration.x.reset_demo_data && ResetDemoDataJob.due?
+      return unless ResetDemoDataJob.enabled? && ResetDemoDataJob.due?
 
       ResetDemoDataJob.perform_now
     rescue ActiveRecord::ActiveRecordError => e
